@@ -170,6 +170,32 @@
     );
   }
 
+  /* ---------- 回复风格注入：读 localStorage 的 char_reply_style ----------
+     最高红线（禁止动作描写）无论 short / normal / long 一律先加上；
+     short / long 再各自追加一条长度要求。整段读取与拼接都包在 try-catch 里，
+     读不到、存不下或隐私模式都不影响请求正常发出。 */
+  var REPLY_STYLE_KEY = "char_reply_style";
+  var FORMAT_REDLINE =
+    "\n\n【绝对格式要求：你正在使用手机聊天软件。请只输出纯粹的对话内容，" +
+    "绝对不要使用任何括号（）、星号**或大括号{}来进行动作、神态、心理或场景描写！" +
+    "像真人发微信一样说话。】";
+  var REPLY_STYLE_TAIL = {
+    short:
+      "\n【回复要求：极简模式。字数极短，每次回复最好不超过15个字，用简短、随意的口吻，不要长篇大论。】",
+    long:
+      "\n【回复要求：话痨模式。多表达你的想法和感受，可以分几段话发，但不许写动作描写，只说话。】"
+  };
+
+  function replyStyleTail() {
+    try {
+      var style = String(global.localStorage.getItem(REPLY_STYLE_KEY) || "");
+      return FORMAT_REDLINE + (REPLY_STYLE_TAIL[style] || "");
+    } catch (err) {
+      /* localStorage 读不到就只保留最高红线，不抛错 */
+      return FORMAT_REDLINE;
+    }
+  }
+
   /* 隐藏情绪标签指令：不管人设层给的是什么，出网的系统提示词都以这句话结尾。
      模型回的那一段标签会在接口出口被 readEmotion 摘掉，不会进气泡。 */
   var EMOTION_TAIL =
@@ -177,18 +203,30 @@
     "格式必须严格为 [emotion: happy]、[emotion: sad]、[emotion: love] 或 [emotion: normal]。" +
     "标签必须放在正文的最后。";
 
+  /* AI 主动发红包指令：紧跟情绪标签之后输出，出口由 readRedPacket 在接口层剥掉。
+     只新增这一段提示词，不改动人设层与回复风格的既有拼接。 */
+  var REDPACKET_TAIL =
+    "\n\n你可以给用户发红包。如果你觉得合适（比如安慰、奖励、表达爱意），" +
+    "请在回复的最后单独起一行输出：[红包:金额]（例如：[红包:52.0]）。" +
+    "除此之外，绝对不要在正常对话中输出这个格式。";
+
   /* 入参 ask 是本轮要发的用户原话，世界书按它召回 */
   function systemText(ask) {
     if (S.companion && typeof S.companion.systemPrompt === "function") {
       try {
         var text = String(S.companion.systemPrompt(ask) || "");
-        if (text.replace(/\s+/g, "")) return text + EMOTION_TAIL;
+        if (text.replace(/\s+/g, "")) return text + replyStyleTail() + EMOTION_TAIL + REDPACKET_TAIL;
       } catch (err) {
         /* 人格层出错也不能不带设定发请求 */
       }
     }
     var block = personaBlock(ask);
-    return ((block ? block + "\n\n" : "") + "你是一个虚拟伴侣，请用你自己的语气回复。") + EMOTION_TAIL;
+    return (
+      ((block ? block + "\n\n" : "") + "你是一个虚拟伴侣，请用你自己的语气回复。") +
+      replyStyleTail() +
+      EMOTION_TAIL +
+      REDPACKET_TAIL
+    );
   }
 
   function trimByLength(messages) {
@@ -255,6 +293,30 @@
       text: rest.replace(/^\s+/, "").replace(/\s+$/, ""),
       emotion: found
     };
+  }
+
+  /* ---------- AI 红包标记：提取 + 剥离 ----------
+     提示词要求模型在正文最后单独起一行输出 [红包:金额]，这里同样在接口出口处理：
+     · 正文里一律删掉这段字符串（连带它留下的空行与头尾空白）；
+     · 金额随结果返回 redPacket 字段（认不出金额就是 null），供聊天层推红包消息。
+     金额允许 52 / 52.0 / 52.00 这类写法，上限不做任何钳制。 */
+  var REDPACKET_RE = /\[\s*红包\s*[:：]\s*(\d+(?:\.\d+)?)\s*\]/g;
+
+  function readRedPacket(text) {
+    var body = String(text === null || text === undefined ? "" : text);
+    var amount = 0;
+    var rest = body.replace(REDPACKET_RE, function (all, num) {
+      var n = Number(num);
+      /* 多个标记时取最后一个有效金额，其余一律删掉 */
+      if (isFinite(n) && n > 0) amount = n;
+      return "";
+    });
+    rest = rest
+      .replace(/^[ \t]+|[ \t]+$/gm, "")
+      .replace(/\n{3,}/g, "\n\n")
+      .replace(/^\s+/, "")
+      .replace(/\s+$/, "");
+    return { text: rest, redPacket: amount > 0 ? amount : null };
   }
 
   function pickContent(data) {
@@ -430,19 +492,23 @@
         if (!rawText) return fail("empty", "模型没有返回内容，换一个模型再试");
         /* 先把隐藏情绪标签摘掉：往下走的正文里一定不含 [emotion: xx] */
         var emo = readEmotion(rawText);
-        var text = emo.text;
-        if (!text) return fail("empty", "模型没有返回内容，换一个模型再试");
+        /* 再摘红包标记：正文里不会漏出 [红包:xx]，金额单独交给聊天层。
+           只回了红包标记时正文可以为空，聊天层会跳过空气泡、只推红包卡片。 */
+        var rp = readRedPacket(emo.text);
+        var text = rp.text;
+        if (!text && !rp.redPacket) return fail("empty", "模型没有返回内容，换一个模型再试");
         /* 外语回复按提示词带一行中文译文：在接口出口就拆开，
            分隔行不会漏到气泡以外的提示、桌面短台词等界面上 */
         var pack =
-          S && typeof S.splitBilingual === "function" ? S.splitBilingual(text) : { text: text, trans: "" };
+          text && S && typeof S.splitBilingual === "function" ? S.splitBilingual(text) : { text: text, trans: "" };
         return {
           ok: true,
           code: "ok",
           message: "",
           text: pack.text || text,
           trans: pack.trans || "",
-          emotion: emo.emotion
+          emotion: emo.emotion,
+          redPacket: rp.redPacket
         };
       })
       .catch(function (err) {

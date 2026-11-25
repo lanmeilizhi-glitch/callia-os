@@ -5,6 +5,9 @@
   <!-- 视口宽度：强制按真实设备宽度排版，禁止被当成 980px 宽的桌面/平板页面 -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#e9e9e7">
+  <!-- 开屏品牌字的欧式连笔手写体（Dancing Script / Great Vibes）；
+       外网字体加载失败时自动回退到系统手写体，不会阻塞页面渲染 -->
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500&amp;family=Great+Vibes&amp;display=swap" rel="stylesheet">
   <title>Callia OS · 虚拟伴侣桌面</title>
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/apps.css">
@@ -29,8 +32,47 @@
   <link rel="stylesheet" href="css/keyboard.css">
   <!-- 卡莉娅（Callia）AI 智能管家：独立页面样式，只作用于 #kalia-page 与九宫格 C 图标 -->
   <link rel="stylesheet" href="css/kalia.css">
+  <!-- 纪念日（倒数日）：只作用于 .anncard / .ann-* 节点，卡片沿用记忆页的毛玻璃令牌 -->
+  <link rel="stylesheet" href="css/anniversary.css">
+  <!-- 相册小组件：只作用于 .pw-* 与 #widget-photo 节点，正方形照片卡片（逻辑见 js/photoWidget.js） -->
+  <link rel="stylesheet" href="css/photo-widget.css">
+  <!-- 气泡操作样式与浮层提示样式已不存在于 css/ 目录，引用已清理 -->
  </head>
  <body data-view="boot">
+  <!-- 开屏动画：SVG 星轨 + 品牌艺术字 + 景深光斑与星点，纯视觉遮罩，不参与任何加载逻辑（样式见 css/base.css 末尾，淡出见 js/kalia.js 末尾） -->
+  <div id="splash-screen">
+   <div class="splash-container">
+    <!-- 星轨 SVG -->
+    <svg class="orbit-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+     <circle cx="100" cy="100" r="90" class="orbit-line line-1" /> <circle cx="100" cy="100" r="70" class="orbit-line line-2" /> <circle cx="100" cy="100" r="50" class="orbit-line line-3" />
+    </svg>
+    <!-- 中心柔光 -->
+    <div class="center-glow"></div>
+    <!-- 品牌艺术字 -->
+    <div class="brand-title">Callia Phone</div>
+    <!-- 光斑与星星 -->
+    <div class="bokeh b1"></div>
+    <div class="bokeh b2"></div>
+    <div class="bokeh b3"></div>
+    <div class="star star-a"></div>
+    <div class="star star-b"></div>
+    <div class="star star-c"></div>
+    <div class="star star-d"></div>
+    <div class="star star-e"></div>
+    <div class="star star-f"></div>
+   </div>
+   <!-- 流星划过（与 splash-container 平级，z-index 低于品牌字与底部文字） -->
+   <div class="meteor meteor-1"></div>
+   <div class="meteor meteor-2"></div>
+   <div class="meteor meteor-3"></div>
+   <div class="meteor meteor-4"></div>
+   <div class="meteor meteor-5"></div>
+   <div class="meteor meteor-6"></div>
+   <div class="meteor meteor-7"></div>
+   <div class="meteor meteor-8"></div>
+   <div class="meteor meteor-9"></div>
+   <div class="splash-text">正在翻开属于我们的故事...</div>
+  </div>
   <main class="stage">
    <div class="device">
     <section class="screen" id="screen">
@@ -119,7 +161,7 @@
           <div class="bento" id="bento-life">
            <p class="bento__empty" id="bento-empty" hidden>这一屏的小组件都收起来了
             <button class="bento__empty-btn" type="button" data-wgt-lib="life">去组件库添加</button></p>
-           <article class="bento__tile tile--weather" data-widget="weather">
+           <article class="bento__tile tile--weather" id="tile-weather" data-widget="weather">
             <div class="tile__head">
              <span class="tile__label">天气</span> <span class="tile__tag" id="life-city">灰谷</span>
             </div>
@@ -129,9 +171,9 @@
             <div class="wx__curve" id="wx-curve" aria-hidden="true"></div>
             <p class="tile__foot"><span id="wx-wind">风 2.4 m/s</span><span class="tile__pill" id="wx-aqi">空气优</span></p>
            </article>
-           <button class="bento__tile tile--water" type="button" data-widget="water" data-life="water-add" onclick="openDrinkModal()" aria-label="记录饮水杯数"><span class="tile__label">饮水</span> <span class="tile__stat num"><b id="water-count"><span id="drink-current-val">3</span></b><i id="water-goal">/8</i></span> <span class="tile__track"><i id="water-bar"></i></span> <span class="tile__cue" aria-hidden="true">＋</span></button>
-           <button class="bento__tile tile--steps" type="button" data-widget="steps" data-life="steps-add" onclick="openStepsModal()" aria-label="记录步数"><span class="tile__label">步数</span> <span class="ring" id="steps-ring" aria-hidden="true"><b class="num" id="steps-value"><span id="steps-current-val">4820</span></b></span> <span class="tile__cue" aria-hidden="true">＋</span></button>
-           <article class="bento__tile tile--sleep" data-widget="sleep">
+           <button class="bento__tile tile--water" type="button" id="tile-water" data-widget="water" data-life="water-add" onclick="openDrinkModal()" aria-label="记录饮水杯数"><span class="tile__label">饮水</span> <span class="tile__stat num"><b id="water-count"><span id="drink-current-val">3</span></b><i id="water-goal">/8</i></span> <span class="tile__track"><i id="water-bar"></i></span> <span class="tile__cue" aria-hidden="true">＋</span></button>
+           <button class="bento__tile tile--steps" type="button" id="tile-steps" data-widget="steps" data-life="steps-add" onclick="openStepsModal()" aria-label="记录步数"><span class="tile__label">步数</span> <span class="ring" id="steps-ring" aria-hidden="true"><b class="num" id="steps-value"><span id="steps-current-val">4820</span></b></span> <span class="tile__cue" aria-hidden="true">＋</span></button>
+           <article class="bento__tile tile--sleep" id="tile-sleep" data-widget="sleep">
             <div class="tile__head">
              <span class="tile__label">昨晚睡眠</span> <span class="tile__tag" id="sleep-quality">质量 74</span>
             </div>
@@ -139,7 +181,7 @@
             <div class="sleep__bar" id="sleep-phases" aria-hidden="true"></div>
             <p class="tile__foot" id="sleep-time">23:42 入睡 · 06:26 醒来</p>
            </article>
-           <article class="bento__tile tile--focus" data-widget="focus">
+           <article class="bento__tile tile--focus" id="tile-focus" data-widget="focus">
             <div class="tile__head">
              <span class="tile__label">专注</span> <span class="tile__tag"><b id="focus-sessions">1</b> 段</span>
             </div>
@@ -154,20 +196,20 @@
              <i id="focus-bar"></i>
             </div>
            </article>
-           <article class="bento__tile tile--budget" data-widget="budget">
+           <article class="bento__tile tile--budget" id="tile-budget" data-widget="budget">
             <div class="tile__head">
              <span class="tile__label">本月花销</span> <span class="tile__tag" id="budget-left">余 1132</span>
             </div>
             <p class="tile__stat tile__stat--row num"><b id="budget-spent">1268</b><span id="budget-total">/ 2400</span></p>
             <div class="budget__list" id="budget-items"></div>
            </article>
-           <article class="bento__tile tile--habits" data-widget="habits">
+           <article class="bento__tile tile--habits" id="tile-habits" data-widget="habits">
             <div class="tile__head">
              <span class="tile__label">今日习惯</span> <span class="tile__tag" id="habit-count">1 / 4</span>
             </div>
             <div class="habit__list" id="habit-list"></div>
            </article>
-           <article class="bento__tile tile--plan" data-widget="plan">
+           <article class="bento__tile tile--plan" id="tile-plan" data-widget="plan">
             <div class="tile__head">
              <span class="tile__label">今日安排</span>
              <button class="tile__btn" type="button" data-open="schedule">全部</button>
@@ -178,12 +220,8 @@
             <p class="tile__foot" id="today-meta">—</p>
             <div class="today__list" id="today-list"></div>
            </article>
-           <div class="bento__tile tile--music" id="widget-now" data-widget="music" data-open="music" role="button" aria-label="打开音乐">
-            <span class="disc" id="now-disc" aria-hidden="true"><i></i></span> <span class="music__meta"> <span class="music__label" id="now-status">已暂停</span> <span class="music__title" id="now-title">灰度呼吸</span> <span class="music__artist" id="now-artist">LUMEN · Ambient</span> </span> <span class="bars" id="now-bars" aria-hidden="true"></span> <i class="tile__go" aria-hidden="true"></i>
-           </div>
+           <!-- 原「正在播放」音乐小组件已下线，音乐页改造为 Zane 的日记本 -->
           </div>
-          <!-- 独立图片卡片：每张图是一个单独的卡片，不包在网格里 -->
-          <div class="photo-cards" id="photo-cards"></div>
          </div>
         </section>
        </div>
@@ -276,25 +314,44 @@
       <button class="edit-bar__btn edit-bar__btn--solid" type="button" data-edit-done>完成</button>
      </div>
      <!-- Dock -->
-     <nav class="dock" id="dock" hidden aria-label="常用应用">
-      <button class="dock__item" type="button" data-open="chat" aria-label="伴侣"><i class="ico ico--chat"></i></button>
-      <button class="dock__item" type="button" data-open="mood" aria-label="心情"><i class="ico ico--mood"></i></button>
-      <button class="dock__item" type="button" data-open="music" aria-label="音乐"><i class="ico ico--music"></i></button>
-      <button class="dock__item" type="button" data-open="settings" aria-label="设置"><i class="ico ico--gear"></i></button>
+     <!-- Dock：四个等分按钮，结构写死。点击一律走 data-open，由 os.js 的全局
+          委托（document 捕获阶段 closest("[data-open]") -> openApp）接住，
+          所以这里不写 onclick，也不给内部图标加 pointer-events: none。 -->
+     <nav class="dock fixed-dock" id="dock" hidden aria-label="常用应用">
+      <button class="dock__item dock-item" type="button" data-open="chat" aria-label="伴侣">
+       <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+        <path d="M4 6.6A2.6 2.6 0 0 1 6.6 4h10.8A2.6 2.6 0 0 1 20 6.6v6.8a2.6 2.6 0 0 1-2.6 2.6H10l-4 3.4v-3.4H6.6A2.6 2.6 0 0 1 4 13.4z" />
+       </svg>
+      </button>
+      <button class="dock__item dock-item" type="button" data-open="diary" aria-label="日记">
+       <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+        <path d="M6.4 3.8h11.2a1.6 1.6 0 0 1 1.6 1.6v13.2a1.6 1.6 0 0 1-1.6 1.6H6.4a1.6 1.6 0 0 1-1.6-1.6V5.4a1.6 1.6 0 0 1 1.6-1.6z" /><path d="M8.4 8.4h7.2M8.4 12h7.2M8.4 15.6h4.4" />
+       </svg>
+      </button>
+      <button class="dock__item dock-item" type="button" data-open="mood" aria-label="心情">
+       <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+        <circle cx="12" cy="12" r="8" /><path d="M8.4 13.8c1 1.4 2.2 2 3.6 2s2.6-.6 3.6-2" /><path d="M9 9.6h.01M15 9.6h.01" />
+       </svg>
+      </button>
+      <button class="dock__item dock-item" type="button" data-open="settings" aria-label="设置">
+       <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+        <circle cx="12" cy="12" r="3.2" /><path d="M12 3.6v2.2M12 18.2v2.2M4.8 12H7M17 12h2.2M6.9 6.9l1.6 1.6M15.5 15.5l1.6 1.6M17.1 6.9l-1.6 1.6M8.5 15.5l-1.6 1.6" />
+       </svg>
+      </button>
      </nav>
      <div class="homebar" id="homebar" role="button" tabindex="0" aria-label="返回桌面">
       <i></i>
      </div>
      <!-- 聊天背景选图：只在个人主页「聊天背景」分栏里被唤起 -->
-     <input id="cbg-file" type="file" accept="image/*" hidden>
-     <!-- 图片卡片小组件的文件选择框 -->
-     <input id="photo-file-input" type="file" accept="image/*" hidden>
-     <!-- 伴侣档案头像上传 -->：档案页白球/黑钮调起它，读取与存本机见 js/profileApp.js。
+     <input id="cbg-file" type="file" accept="image/*" hidden> <!-- 伴侣档案头像上传：档案页白球/黑钮调起它，读取与存本机见 js/profileApp.js。
 		     放在这里而不是档案页内部，是因为档案页每次重绘都会重建 DOM，常驻节点不会被一起销毁。 -->
      <input type="file" id="avatar-upload" accept="image/*" style="display: none;"> <!-- 聊天页「你」的头像上传：点聊天页右侧那个圆形头像调起它，
 		     读取与存本机见 js/apps.js。同样常驻 body：聊天页每次重绘都会
 		     重建 DOM，头像气泡不会被一起销毁。 -->
-     <input type="file" id="user-avatar-upload" accept="image/*" style="display: none;">
+     <input type="file" id="user-avatar-upload" accept="image/*" style="display: none;"> <input type="file" id="import-file-input" accept=".json" style="display: none;"> <!-- 时光机导入：设置页「恢复数据（导入）」调起它，
+           读取与写回见 js/apps2.js。常驻 body，设置页重绘不会销毁它。 -->
+     <!-- 相册小组件选图：常驻 body，桌面重绘不会销毁它。读取与 canvas 极限压缩见 js/photoWidget.js。 -->
+     <input id="photo-widget-file" type="file" accept="image/*" hidden>
      <div class="toast" id="toast" role="status" aria-live="polite"></div>
      <!-- 聊天气泡样式：静态底部弹窗，默认隐藏，交互见 js/bubbleStyle.js -->
      <div class="bubble-modal" id="bubble-modal" style="display: none;">
@@ -327,7 +384,7 @@
   <div id="kalia-page" style="display: none;" aria-hidden="true">
    <header class="kalia-nav">
     <button class="kalia-nav__back" id="kalia-back" type="button" onclick="closeKaliaPage()" aria-label="返回主页">‹</button>
-    <p class="kalia-nav__title">卡莉娅管家</p>
+    <p class="kalia-nav__title">卡莉娅</p>
     <span class="kalia-nav__badge" aria-hidden="true">C</span>
    </header>
    <div id="kalia-chat-log" role="log" aria-live="polite" aria-label="卡莉娅聊天记录"></div>
@@ -340,7 +397,7 @@
    </div>
    <div class="kalia-composer">
     <input id="kalia-input" type="text" autocomplete="off" maxlength="500" placeholder="和卡莉娅说点什么…" aria-label="输入消息">
-    <button class="kalia-send" type="button" onclick="sendKaliaMessage()">发送</button>
+    <button class="kalia-send" type="button" onclick="sendKaliaMessage()" aria-label="发送"></button>
    </div>
   </div>
   <!-- 个人档案底部弹窗：默认隐藏，开关只靠 display + transform，
@@ -365,6 +422,23 @@
     <button id="save-persona-btn" type="button" style="width: 100%; padding: 12px; background: #333; color: #fff; border: none; border-radius: 10px; font-size: 16px; margin-bottom: 20px;">保存档案</button>
    </div>
   </div>
+  <!-- 数据管理全屏内页：设置页「数据管理」那一行调起，默认隐藏，显隐只靠 display，
+       由 js/apps2.js 的 openDataPage / closeDataPage 控制，不是弹窗，也没有路由跳转。
+       五个动作按钮从设置页整体搬到这里（由 js/apps2.js 的 dataPageMarkup 填进 #data-page-host），
+       id / data-confirm / 文案原封不动，点击仍走 js/apps2.js 里 #app-root 的同一套委托。 -->
+  <div id="data-manage-page" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #f7f9fc; z-index: 10000; flex-direction: column;">
+   <!-- 顶栏 -->
+   <div style="display: flex; align-items: center; padding: 15px; background: #fff; border-bottom: 1px solid #eee;">
+    <button onclick="closeDataPage()" style="border: none; background: transparent; font-size: 20px; cursor: pointer;">&lt;</button>
+    <h3 style="margin: 0 auto; font-size: 16px;">数据管理</h3>
+    <div style="width: 20px;"></div>
+   </div>
+   <!-- 内容区 -->
+   <div style="flex: 1; padding: 20px; overflow-y: auto;">
+    <p style="font-size: 12px; color: #999; margin-bottom: 20px;">所有数据仅保存在这台设备的本地存储中，清除应用数据即会消失。请定期备份。</p>
+    <div id="data-page-host" class="set-actions"></div>
+   </div>
+  </div>
   <!-- 睡眠 / 花销 / 天气 / 专注 / 习惯 / 安排 / 音乐 七个小组件弹窗的脚本，
 	   与饮水、步数同一套写法，放在 widgets.js 之后加载。 -->
   <script src="js/sleepWidget.js"></script>
@@ -373,7 +447,7 @@
   <script src="js/focusWidget.js"></script>
   <script src="js/habitWidget.js"></script>
   <script src="js/planWidget.js"></script>
-  <script src="js/musicWidget.js"></script>
+  <!-- 原音乐小组件（js/musicWidget.js）与其编辑弹窗已随音乐页一并下线 -->
   <!-- 饮水编辑弹窗：只靠 display + transform 控制显隐，没有任何路由跳转，
 	   逻辑见 js/drinkWidget.js（openDrinkModal / closeDrinkModal / updateDrink / saveDrinkData）。
 	   放在 body 最外层，生活屏重绘不会把它一起销毁。 -->
@@ -383,18 +457,7 @@
   <!-- 专注编辑弹窗：逻辑见 js/focusWidget.js -->
   <!-- 习惯编辑弹窗：逻辑见 js/habitWidget.js -->
   <!-- 安排编辑弹窗：逻辑见 js/planWidget.js -->
-  <!-- 音乐编辑弹窗：逻辑见 js/musicWidget.js -->
-  <div id="music-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: flex-end;">
-   <div id="music-sheet" style="width: 100%; background: #fff; border-radius: 20px 20px 0 0; padding: 18px 18px calc(18px + env(safe-area-inset-bottom)); transform: translateY(100%); transition: transform 0.3s ease;">
-    <p style="margin: 0 0 12px; font-size: 15px; font-weight: 600;">正在播放</p>
-    <div id="music-edit-list" style="max-height: 40vh; overflow-y: auto; margin-bottom: 16px;"></div>
-    <div style="display: flex; gap: 10px;">
-     <button type="button" onclick="closeMusicModal()" style="flex: 1; padding: 12px; border-radius: 12px; border: 1px solid #ddd; background: #f6f6f4; font-size: 14px;">取消</button>
-     <button id="music-play-toggle" type="button" onclick="toggleMusicPlay()" aria-pressed="false" style="flex: 1; padding: 12px; border-radius: 12px; border: 1px solid #ddd; background: #f6f6f4; font-size: 14px;">播放</button>
-     <button type="button" onclick="saveMusicData()" style="flex: 1; padding: 12px; border-radius: 12px; border: 0; background: #1d1d1f; color: #fff; font-size: 14px;">保存</button>
-    </div>
-   </div>
-  </div>
+  <!-- 音乐编辑弹窗已下线 -->
   <div id="plan-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: flex-end;">
    <div id="plan-sheet" style="width: 100%; background: #fff; border-radius: 20px 20px 0 0; padding: 18px 18px calc(18px + env(safe-area-inset-bottom)); transform: translateY(100%); transition: transform 0.3s ease;">
     <p style="margin: 0 0 12px; font-size: 15px; font-weight: 600;">编辑今日安排</p>
@@ -524,6 +587,7 @@
     <button type="button" onclick="saveStepsData()" style="width: 100%; padding: 12px; background: #333; color: #fff; border: none; border-radius: 10px; font-size: 16px;">保存记录</button>
    </div>
   </div>
+  <!-- 原生音频元素与播放核心（js/audioPlayer.js）已随音乐播放下线 -->
   <script src="js/keyboard.js"></script>
   <script src="js/state.js"></script>
   <script src="js/docs.js"></script>
@@ -534,6 +598,8 @@
   <script src="js/presence.js"></script>
   <script src="js/apps.js"></script>
   <script src="js/apps2.js"></script>
+  <!-- 纪念日（倒数日）：只读写本机 localStorage 的 anniversary_data，天数用原生 Date 计算 -->
+  <script src="js/anniversary.js"></script>
   <script src="js/bubbleStyle.js"></script>
   <!-- 我的档案（User Persona）：只读写本机 localStorage，不碰任何接口 -->
   <script src="js/userPersona.js"></script>
@@ -541,6 +607,7 @@
   <script src="js/charHome.js"></script>
   <script src="js/chatBg.js"></script>
   <script src="js/chatQuote.js"></script>
+  <!-- 气泡操作脚本 js/chatActions.js 不存在于 js/ 目录，引用已清理 -->
   <script src="js/avatar.js"></script>
   <script src="js/widgets.js"></script>
   <!-- 离线梦境日记：离开超过 2 小时回主页时生成一篇，填进 #offline-diary-card -->
@@ -550,10 +617,15 @@
   <!-- 步数小组件的数据编辑：同样只读写本机 localStorage，不碰其他小组件 -->
   <script src="js/stepsWidget.js"></script>
   <script src="js/theme.js"></script>
+  <!-- UI 主题持久化收口：把明暗 / 皮肤 / 玻璃 / 壁纸 / 遮罩 / 聊天背景全部镜像到 localStorage，刷新后完整恢复 -->
+  <script src="js/themeUI.js"></script>
+  <!-- 相册小组件：只读写本机 localStorage 的 photoWidgets 数组，
+       图片一律先经 canvas 压缩（宽上限 300px + JPEG 0.6）再落盘，
+       不参与主存档，也不碰伴侣卡片与其他小组件的渲染。 -->
+  <script src="js/photoWidget.js"></script>
   <script src="js/homePages.js"></script>
   <script src="js/homeLayout.js"></script>
   <script src="js/homeWidgets.js"></script>
-  <script src="js/photoWidget.js"></script>
   <script src="js/os.js"></script>
   <!-- 心跳同步：亲密度每净增 50 点触发一次庆祝特效，由 os.js 的 refreshHome 调用 -->
   <script src="js/heartbeat.js"></script>

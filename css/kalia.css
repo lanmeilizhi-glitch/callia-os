@@ -38,46 +38,42 @@ html[data-theme="dark"] #kalia-page {
   color: #f2f2f4;
 }
 
-/* 顶部导航 */
+/* 顶部导航：与主聊天同一套语言——透明背景、无分隔线，只保留毛玻璃模糊 */
 .kalia-nav {
   flex: 0 0 auto;
   display: flex;
   align-items: center;
   gap: 10px;
   padding: calc(10px + env(safe-area-inset-top)) 14px 10px;
-  background: rgba(255, 255, 255, 0.86);
+  background: transparent;
   -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+  border-bottom: 0;
 }
 
-html[data-theme="dark"] .kalia-nav {
-  background: rgba(28, 29, 33, 0.9);
-  border-bottom-color: rgba(255, 255, 255, 0.08);
-}
-
+/* 返回按钮：极简 ‹ 符号，去掉灰色圆底，只保留点击热区 */
 .kalia-nav__back {
   flex: 0 0 auto;
   display: grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
-  padding: 0;
+  width: 34px;
+  height: 34px;
+  padding: 0 0 3px;
   border: 0;
-  border-radius: 12px;
-  background: rgba(0, 0, 0, 0.05);
+  border-radius: 0;
+  background: transparent;
+  -webkit-tap-highlight-color: transparent;
   color: inherit;
-  font-size: 18px;
+  font-size: 27px;
+  font-weight: 300;
   line-height: 1;
   cursor: pointer;
+  transition: opacity var(--dur-fast, 0.16s) var(--ease, ease);
 }
 
 .kalia-nav__back:active {
-  background: rgba(0, 0, 0, 0.12);
-}
-
-html[data-theme="dark"] .kalia-nav__back {
-  background: rgba(255, 255, 255, 0.1);
+  background: transparent;
+  opacity: 0.4;
 }
 
 .kalia-nav__title {
@@ -85,21 +81,23 @@ html[data-theme="dark"] .kalia-nav__back {
   min-width: 0;
   margin: 0;
   font-size: 16px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  font-weight: 600;
+  letter-spacing: 0.06em;
 }
 
+/* 右上角 C：极简纯字标，去掉粉色渐变底块 */
 .kalia-nav__badge {
   flex: 0 0 auto;
   display: grid;
   place-items: center;
   width: 26px;
   height: 26px;
-  border-radius: 9px;
-  background: linear-gradient(145deg, #ffd9e6, #f79ab8);
-  color: #7a2f4a;
-  font-size: 14px;
-  font-weight: 800;
+  border-radius: 0;
+  background: none;
+  color: var(--ink-3, #888d95);
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
 }
 
 /* 聊天记录区 */
@@ -114,21 +112,29 @@ html[data-theme="dark"] .kalia-nav__back {
   gap: 12px;
 }
 
-.kalia-msg {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+/* 卡莉娅页内气泡：直接套用主聊天（Zane）的 .msg / .msg--me / .msg--ai / .msg__bubble，
+   毛玻璃、圆角、左右对齐（用户靠右、卡莉娅靠左）全部由 apps.css 既有规则接管，
+   这里只限定宽度、收紧行高到 1.5，消除作文式大空行。 */
+#kalia-chat-log .msg {
   max-width: 84%;
 }
 
-.kalia-msg--user {
-  align-self: flex-end;
-  align-items: flex-end;
+#kalia-chat-log .msg__bubble {
+  line-height: 1.5;
+  white-space: pre-wrap;
 }
 
-.kalia-msg--kalia {
-  align-self: flex-start;
-  align-items: flex-start;
+/* 段落之间只留一行小间距，不跟随浏览器默认 <p> 大边距 */
+#kalia-chat-log .msg__bubble p {
+  margin: 0 0 4px;
+}
+
+#kalia-chat-log .msg__bubble p:last-child {
+  margin-bottom: 0;
+}
+
+#kalia-chat-log .msg__bubble br + br {
+  display: none;
 }
 
 .kalia-msg__name {
@@ -137,46 +143,13 @@ html[data-theme="dark"] .kalia-nav__back {
   color: #9a9aa0;
 }
 
-.kalia-bubble {
-  padding: 10px 13px;
-  border-radius: 16px;
-  font-size: 14.5px;
-  line-height: 1.55;
-  word-break: break-word;
-  white-space: pre-wrap;
-}
-
-.kalia-msg--kalia .kalia-bubble {
-  background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  border-bottom-left-radius: 6px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-}
-
-.kalia-msg--user .kalia-bubble {
-  background: linear-gradient(145deg, #ffd9e6, #f9aec8);
-  color: #4a1f30;
-  border-bottom-right-radius: 6px;
-}
-
-html[data-theme="dark"] .kalia-msg--kalia .kalia-bubble {
-  background: #24262b;
-  border-color: rgba(255, 255, 255, 0.08);
-  box-shadow: none;
-}
-
-html[data-theme="dark"] .kalia-msg--user .kalia-bubble {
-  background: linear-gradient(145deg, #6d3a4e, #8a4761);
-  color: #ffe9f1;
-}
-
 /* 快捷提问：输入框正上方一行，可横向滑动，毛玻璃胶囊 */
 .kalia-quick {
   flex: 0 0 auto;
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 12px 2px;
+  padding: 8px 14px 4px;
   overflow-x: auto;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
@@ -187,103 +160,252 @@ html[data-theme="dark"] .kalia-msg--user .kalia-bubble {
   display: none;
 }
 
+/* 毛玻璃胶囊：与主界面卡片同一套配方（--glass-soft + blur + 发丝高光），
+   去掉生硬边框，字体颜色加深。 */
 .kalia-chip {
   flex: 0 0 auto;
-  padding: 6px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.55);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.45);
-  -webkit-backdrop-filter: blur(12px) saturate(160%);
-  backdrop-filter: blur(12px) saturate(160%);
-  color: #5c5c63;
+  padding: 7px 14px;
+  border: 0;
+  border-radius: var(--r-pill, 999px);
+  background: var(--glass-soft, rgba(255, 255, 255, 0.66));
+  -webkit-backdrop-filter: var(--glass-blur, blur(22px));
+  backdrop-filter: var(--glass-blur, blur(22px));
+  color: var(--ink, #16181b);
   font-family: inherit;
-  font-size: 12px;
-  font-weight: 400;
+  font-size: 12.5px;
+  font-weight: 500;
   letter-spacing: 0.02em;
   line-height: 1.4;
   white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
   cursor: pointer;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-  transition: transform 0.15s ease, background 0.15s ease;
+  box-shadow: var(--glass-shadow, 0 4px 20px rgba(0, 0, 0, 0.06)), var(--glass-top, inset 0 1px 0 rgba(255, 255, 255, 0.7));
+  transition: transform var(--dur-fast, 0.16s) var(--ease, ease), box-shadow var(--dur-fast, 0.16s) var(--ease, ease);
 }
 
 .kalia-chip:active {
-  transform: scale(0.95);
-  background: rgba(255, 255, 255, 0.72);
+  transform: scale(0.96);
+  box-shadow: var(--in, inset 0 1px 2px rgba(18, 20, 24, 0.09));
 }
 
 html[data-theme="dark"] .kalia-chip {
-  border-color: rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.08);
-  color: #c9c9d0;
-  box-shadow: none;
+  background: var(--glass-soft, rgba(30, 32, 36, 0.55));
+  color: var(--ink, #f1f2f4);
 }
 
-html[data-theme="dark"] .kalia-chip:active {
-  background: rgba(255, 255, 255, 0.16);
-}
-
-/* 底部输入区 */
+/* 底部输入区：与主聊天 .app-foot 同一套配方——玻璃底 + 顶部发丝线，
+   底部只让开系统安全区（env 为 0 的机型给 8px 呼吸），不再叠加固定高度。 */
 .kalia-composer {
   flex: 0 0 auto;
+  box-sizing: border-box;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
-  background: rgba(255, 255, 255, 0.92);
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
-  border-top: 1px solid rgba(0, 0, 0, 0.07);
+  gap: var(--sp-2, 8px);
+  padding: 8px 14px max(env(safe-area-inset-bottom), 8px);
+  background: var(--glass-strong, rgba(255, 255, 255, 0.96));
+  -webkit-backdrop-filter: var(--glass-blur, blur(22px));
+  backdrop-filter: var(--glass-blur, blur(22px));
+  border-top: 1px solid var(--glass-border, rgba(255, 255, 255, 0.8));
 }
 
-html[data-theme="dark"] .kalia-composer {
-  background: rgba(28, 29, 33, 0.94);
-  border-top-color: rgba(255, 255, 255, 0.08);
-}
-
+/* 圆角输入框：与主聊天 .field 完全同一配方 */
 #kalia-input {
   flex: 1 1 auto;
   min-width: 0;
-  height: 40px;
-  padding: 0 14px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 20px;
-  background: #ffffff;
-  color: inherit;
-  font-size: 14.5px;
+  min-height: 46px;
+  padding: 0 16px;
+  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.8));
+  border-radius: var(--r-pill, 999px);
+  background: var(--glass-soft, rgba(255, 255, 255, 0.66));
+  box-shadow: var(--in, inset 0 1px 2px rgba(18, 20, 24, 0.09), inset 0 -1px 0 rgba(255, 255, 255, 0.9));
+  color: var(--ink, #16181b);
+  font-size: 14px;
+  letter-spacing: 0.02em;
   font-family: inherit;
   outline: none;
   box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
-#kalia-input:focus {
-  border-color: #f79ab8;
+#kalia-input::placeholder {
+  color: var(--ink-4, #b5b9bf);
+  letter-spacing: 0.04em;
 }
 
-html[data-theme="dark"] #kalia-input {
-  background: #24262b;
-  border-color: rgba(255, 255, 255, 0.12);
-}
-
+/* 黑色圆形发送按钮：与主聊天 .chat__send 同一配方（实心圆 + 右上箭头） */
 .kalia-send {
+  position: relative;
   flex: 0 0 auto;
-  height: 40px;
-  padding: 0 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  min-width: 46px;
+  height: 46px;
+  padding: 0;
   border: 0;
-  border-radius: 20px;
-  background: #1d1d1f;
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 600;
-  font-family: inherit;
+  border-radius: 50%;
+  background: var(--ink, #16181b);
+  color: var(--surface, #f7f7f5);
+  box-shadow: 0 10px 26px var(--lo-strong, rgba(18, 20, 24, 0.18));
+  -webkit-tap-highlight-color: transparent;
   cursor: pointer;
+  transition: transform var(--dur-fast, 0.16s) var(--ease, ease), background var(--dur-fast, 0.16s) var(--ease, ease);
+}
+
+.kalia-send::after {
+  content: "";
+  width: 11px;
+  height: 11px;
+  border-top: 1.7px solid currentColor;
+  border-right: 1.7px solid currentColor;
+  transform: rotate(45deg) translate(-2px, 2px);
 }
 
 .kalia-send:active {
   transform: scale(0.96);
+  background: var(--ink-2, #4b4f56);
 }
 
-html[data-theme="dark"] .kalia-send {
-  background: #f2f2f4;
-  color: #17181b;
+/* ============================================================
+   底栏（Dock）强制层：本文件是 index.html 里最后加载的样式表，
+   放在最末尾 + !important，压过 base.css / keyboard.css 的全部历史规则。
+   目标：四个图标绝对不重叠，且整格都是点击热区。
+   父容器：.dock / nav#dock；子项：.dock__item.dock-item（四个）。
+   要点：
+   1) 父容器 fixed 贴底 + flex，不再用 absolute / grid / translateX 居中；
+   2) 子项一律 position: static + flex: 1 自动平分，不靠 margin 挤位置；
+   3) pointer-events 只在父容器上放开（base.css 里 .dock 是 none）：
+      给内部 svg 加 pointer-events: none 会让点击目标变成按钮本身，
+      而旧的 document 捕获委托用 ev.target.closest()，目标为 0 时接不住。
+   ============================================================ */
+.dock,
+.fixed-dock {
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: space-around !important;
+  align-items: center !important;
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  top: auto !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  height: 65px !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  gap: 0 !important;
+  transform: none !important;
+  border-radius: 0 !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+  /* 必须高于 base.css 里 .homebar 的 z-index: 26：homebar 是 .screen 的直接子节点，
+     又排在 dock 之后，同层时它会盖住整条底栏下半部，这就是“点原本位置没反应”的根源。 */
+  z-index: 9999 !important;
+  /* 适配手机底部手势条：高度不变，内容上推 */
+  padding-bottom: env(safe-area-inset-bottom) !important;
+  /* 底座本身不拦事件，但子项必须能收到（覆盖 base.css 的 pointer-events: none）*/
+  pointer-events: auto !important;
+  animation: none !important;
 }
+
+/* [hidden] 必须能真的藏起来：display: flex !important 会压过 UA 的 hidden 规则，
+   否则锁屏与应用内底栏会漏出来。os.js 的 syncDock 靠这个属性切换。 */
+.dock[hidden],
+.fixed-dock[hidden] {
+  display: none !important;
+}
+
+/* 旧的底座光晕伪元素会盖在图标上，直接关掉 */
+.dock::before,
+.fixed-dock::before {
+  content: none !important;
+}
+
+.dock-item,
+.dock__item {
+  position: static !important;
+  left: auto !important;
+  right: auto !important;
+  top: auto !important;
+  bottom: auto !important;
+  transform: none !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  flex: 1 1 0 !important;
+  width: 25% !important;
+  min-width: 0 !important;
+  height: 100% !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  z-index: 10000 !important;
+}
+
+/* 图标尺寸锁死 24px，四个完全一样大；尺寸与描边不再依赖 .ico 类 */
+.dock-item svg,
+.dock-item img,
+.dock-item i,
+.dock-item span,
+.dock__item svg,
+.dock__item img,
+.dock__item i {
+  width: 24px !important;
+  height: 24px !important;
+  font-size: 24px !important;
+  display: block !important;
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 1.5 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+}
+
+/* ============================================================
+   全局字体强制层（只改字体家族 / 字重 / 平滑，不碰布局与底栏）
+   本文件是 index.html 里最后加载的样式表，放在最末尾统一压回
+   原本细长、优雅的无衬线质感：
+   1) 全局回到系统无衬线字体栈，并开启字体平滑；
+   2) 设置页与面板标题一律回到常规粗细 400，去掉变粗发黑的观感。
+   ============================================================ */
+body,
+html,
+div,
+p,
+span,
+button,
+input,
+textarea {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", STHeiti, "Microsoft Yahei", Tahoma, Simsun, sans-serif !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+}
+
+/* 设置页与面板标题：回到常规粗细 400。选择器逐个列出，
+   不用 [class*="title"] 这种通配，避免误伤其他层级。
+   同时用 data-* 镜像字重，方便在真机上直接读出当前生效值。 */
+.set-row__t,
+.settings-title,
+.app-head__title p:first-child,
+.set-row__label p:first-child,
+.wp-sheet__title p:first-child,
+.glass-opt__name,
+.sheet__head p,
+.today__title,
+.mem__title {
+  font-weight: 400 !important;
+  font-synthesis-weight: none;
+  font-synthesis-style: none;
+  font-synthesis-small-caps: none;
+}
+

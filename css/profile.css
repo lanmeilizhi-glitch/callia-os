@@ -365,6 +365,98 @@ body[data-motion="off"] .live__dot {
   color: var(--pf-faint);
 }
 
+/* 回复偏好 */
+.pf-pref {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 20px;
+  background: var(--pf-glass);
+  -webkit-backdrop-filter: var(--pf-blur);
+  backdrop-filter: var(--pf-blur);
+  box-shadow: var(--pf-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.pf-pref__head {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.pf-pref__title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--pf-ink);
+}
+
+.pf-pref__sub {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--pf-faint);
+}
+
+.pf-pref__pills {
+  display: flex;
+  gap: 8px;
+}
+
+.pf-pill {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 10px 6px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--pf-inset);
+  box-shadow: inset 0 1px 2px rgba(22, 24, 27, 0.05);
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.18s var(--ease, ease), color 0.18s var(--ease, ease),
+    transform 0.18s var(--ease, ease);
+}
+
+.pf-pill:active {
+  transform: scale(0.97);
+}
+
+.pf-pill b {
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--pf-muted);
+  white-space: nowrap;
+}
+
+.pf-pill span {
+  font-size: 10.5px;
+  line-height: 1.35;
+  color: var(--pf-faint);
+  text-align: center;
+}
+
+.pf-pill.is-on {
+  background: var(--pf-solid);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.16);
+}
+
+.pf-pill.is-on b {
+  color: var(--pf-solid-ink);
+}
+
+.pf-pill.is-on span {
+  color: rgba(247, 247, 245, 0.66);
+}
+
+[data-theme="dark"] .pf-pill.is-on span {
+  color: rgba(22, 24, 27, 0.6);
+}
+
 /* 标签与选项 */
 .pf-opt {
   display: flex;
@@ -664,7 +756,8 @@ body[data-motion="off"] .live__dot {
   }
 
   .live,
-  .pf-chip {
+  .pf-chip,
+  .pf-pill {
     transition: none;
   }
 }

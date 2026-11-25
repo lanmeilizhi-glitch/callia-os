@@ -16,11 +16,15 @@
     chat: '<svg viewBox="0 0 24 24"><path d="M4 6.6A2.6 2.6 0 0 1 6.6 4h10.8A2.6 2.6 0 0 1 20 6.6v6.8a2.6 2.6 0 0 1-2.6 2.6H10l-4 3.4v-3.4H6.6A2.6 2.6 0 0 1 4 13.4z"/></svg>',
     mood: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M8.4 13.8c1 1.4 2.2 2 3.6 2s2.6-.6 3.6-2"/><path d="M9 9.6h.01M15 9.6h.01"/></svg>',
     schedule: '<svg viewBox="0 0 24 24"><rect x="4" y="5.6" width="16" height="14.4" rx="2.6"/><path d="M8 3.4v4M16 3.4v4M4 10.2h16M8.5 14h7"/></svg>',
-    music: '<svg viewBox="0 0 24 24"><path d="M9.2 17.6V7l9.6-2v10.4"/><circle cx="7" cy="17.8" r="2.2"/><circle cx="16.6" cy="15.4" r="2.2"/></svg>',
+    diary: '<svg viewBox="0 0 24 24"><path d="M6.4 3.8h11.2a1.6 1.6 0 0 1 1.6 1.6v13.2a1.6 1.6 0 0 1-1.6 1.6H6.4a1.6 1.6 0 0 1-1.6-1.6V5.4a1.6 1.6 0 0 1 1.6-1.6z"/><path d="M8.4 8.4h7.2M8.4 12h7.2M8.4 15.6h4.4"/></svg>',
     memory: '<svg viewBox="0 0 24 24"><rect x="3.6" y="6" width="12.8" height="12.4" rx="2.6"/><path d="M8 3.6h9.4A2.6 2.6 0 0 1 20 6.2v9.6"/><path d="M6.4 14.6l3-3 3.4 3.4"/></svg>',
     gear: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 3.6v2.2M12 18.2v2.2M4.8 12H7M17 12h2.2M6.9 6.9l1.6 1.6M15.5 15.5l1.6 1.6M17.1 6.9l-1.6 1.6M8.5 15.5l-1.6 1.6"/></svg>',
     calendar: '<svg viewBox="0 0 24 24"><rect x="4" y="5.6" width="16" height="14.4" rx="2.6"/><path d="M8 3.4v4M16 3.4v4M4 10.2h16M8.4 14.2h2.4"/></svg>',
-    profile: '<svg viewBox="0 0 24 24"><rect x="3.4" y="4.8" width="17.2" height="14.4" rx="3"/><circle cx="9.2" cy="10.6" r="2.1"/><path d="M6.1 16.4c.7-1.7 1.8-2.5 3.1-2.5s2.4.8 3.1 2.5"/><path d="M15 9.8h3.4M15 13.4h2.4"/></svg>'
+    profile: '<svg viewBox="0 0 24 24"><rect x="3.4" y="4.8" width="17.2" height="14.4" rx="3"/><circle cx="9.2" cy="10.6" r="2.1"/><path d="M6.1 16.4c.7-1.7 1.8-2.5 3.1-2.5s2.4.8 3.1 2.5"/><path d="M15 9.8h3.4M15 13.4h2.4"/></svg>',
+    /* 纪念日：用户指定的 feather-calendar 线条图标。外层 .ico 的既有规则
+       (.ico svg / .ico svg *) 已统一 fill:none + stroke:currentColor + 圆角线帽，
+       与其余 8 个图标完全同源，因此这里只保留几何形状，不重复写样式属性。 */
+    anniversary: '<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M12 15l2 2 4-4"/></svg>'
   };
 
   var APP_LIST = [
@@ -28,8 +32,11 @@
     { key: "profile", label: "档案", icon: "profile" },
     { key: "mood", label: "心情", icon: "mood" },
     { key: "schedule", label: "日程", icon: "schedule" },
-    { key: "music", label: "音乐", icon: "music" },
+    { key: "diary", label: "日记", icon: "diary" },
     { key: "memory", label: "记忆", icon: "memory" },
+    /* 纪念日（倒数日）：第 9 个入口，页面本体在 js/anniversary.js，
+       只读写 localStorage 的 anniversary_data，不碰主 store。 */
+    { key: "anniversary", label: "纪念日", icon: "anniversary" },
     { key: "settings", label: "设置", icon: "gear" },
     /* 卡莉娅（Callia）AI 智能管家：独立页面入口，点击走 openKaliaPage()，
        不进入主应用路由，也不读写主聊天数据。 */
@@ -367,22 +374,7 @@
       }
     }
 
-    var track = S.TRACKS[S.store.music.index] || S.TRACKS[0];
-    var playing = !!S.store.music.playing;
-    if (el('#now-title')) el('#now-title').textContent = track.title;
-    if (el('#now-artist')) el('#now-artist').textContent = track.artist;
-    if (el('#now-status')) el('#now-status').textContent = playing ? '播放中 · 界面模拟' : '已暂停 · 界面模拟';
-    if (el('#widget-now')) el('#widget-now').classList.toggle('is-playing', playing);
-    if (el('#now-disc')) el('#now-disc').classList.toggle('is-spin', playing);
-
-    var bars = el('#now-bars');
-    if (bars && !bars.children.length) {
-      var html = '';
-      for (var i = 0; i < 9; i += 1) {
-        html += '<i style="animation-delay:' + (i * 0.09).toFixed(2) + 's"></i>';
-      }
-      bars.innerHTML = html;
-    }
+    /* 原「正在播放」音乐小组件已下线，不再读写 S.store.music 与 S.TRACKS */
 
     var hist = S.store.stats.moodHistory || [];
     var spark = el('#today-spark');
@@ -1017,6 +1009,15 @@
     });
   }
 
+  function bindDockDiaryEntry() {
+    var entry = el("#dock-diary-entry");
+    if (!entry || entry.getAttribute("data-diary-bound") === "1") return;
+    entry.setAttribute("data-diary-bound", "1");
+    on(entry, "click", function () {
+      openApp("diary");
+    });
+  }
+
   /* ---------- 初始化 ---------- */
   function init() {
     applyTheme();
@@ -1028,6 +1029,7 @@
     paintBattery();
     bindPager();
     bindGlobal();
+    bindDockDiaryEntry();
     if (S.presence && typeof S.presence.start === "function") S.presence.start();
     boot();
 

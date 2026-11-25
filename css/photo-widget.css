@@ -1,0 +1,213 @@
+/* =====================================================================
+   Callia OS · photo-widget.css
+   相册小组件：桌面正方形照片卡片
+   · 只作用于 .pw-* 节点与 #widget-photo，不覆盖任何既有小组件样式
+   · 卡片用 aspect-ratio 保证正方形，图片 object-fit: cover 居中裁切
+   ===================================================================== */
+
+/* ---------- 小组件外壳 ---------- */
+#widget-photo.wgt--photo {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 10px;
+  padding: 13px 14px 12px;
+  min-width: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 收起状态与桌面其他小组件保持同一套显隐规则 */
+.home__scroll [data-widget="photo"].is-off {
+  display: none !important;
+}
+
+.pw__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+.pw__label {
+  flex: 0 0 auto;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--b-muted, #6f6f78);
+}
+
+.pw__tag {
+  min-width: 0;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(122, 122, 132, 0.14);
+  color: var(--b-muted, #6f6f78);
+  font-size: 10.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- 正方形卡片网格 ---------- */
+.pw-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  min-width: 0;
+}
+
+.pw-card {
+  position: relative;
+  display: block;
+  margin: 0;
+  /* aspect-ratio 兜底：不支持时靠下面的 padding-top 撑出正方形 */
+  aspect-ratio: 1 / 1;
+  padding: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgba(122, 122, 132, 0.14);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.07),
+    0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.18s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* 老内核不支持 aspect-ratio 时的正方形撑法：内部占位块按宽度 100% 高度 */
+.pw-card::before {
+  content: "";
+  display: block;
+  padding-top: 100%;
+}
+
+@supports (aspect-ratio: 1 / 1) {
+  .pw-card::before {
+    display: none;
+  }
+}
+
+.pw-card:active {
+  transform: scale(0.97);
+}
+
+.pw-card__img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  border: 0;
+  background: rgba(122, 122, 132, 0.12);
+}
+
+/* ---------- 单张删除按钮 ---------- */
+.pw-card__rm {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(20, 20, 24, 0.56);
+  color: #f6f6f4;
+  font-size: 10px;
+  line-height: 1;
+  opacity: 0;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+/* 触屏没有 hover：删除按钮常驻半透明，按下时加重 */
+.pw-card__rm {
+  opacity: 0.72;
+}
+
+.pw-card__rm:active {
+  opacity: 1;
+  transform: scale(0.9);
+}
+
+/* ---------- 添加按钮 ---------- */
+.pw-add {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  aspect-ratio: 1 / 1;
+  min-width: 0;
+  padding: 6px 4px;
+  border: 1px dashed rgba(122, 122, 132, 0.5);
+  border-radius: 14px;
+  background: rgba(122, 122, 132, 0.07);
+  color: var(--b-ink, #1c1c20);
+  font: inherit;
+  font-size: 10.5px;
+  line-height: 1.3;
+  text-align: center;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.16s ease, background 0.16s ease;
+}
+
+.pw-add:active {
+  transform: scale(0.96);
+  background: rgba(122, 122, 132, 0.18);
+}
+
+.pw-add__plus {
+  font-style: normal;
+  font-size: 17px;
+  line-height: 1;
+  opacity: 0.72;
+}
+
+.pw-add__text {
+  opacity: 0.7;
+}
+
+/* 空状态时占位方块直接占满网格列，不再额外拼一个整宽按钮 */
+.pw-add--block {
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  min-height: 0;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 10.5px;
+}
+
+/* ---------- 空状态 ----------
+   没照片时网格本身就是占位区：灰色虚线框 + 一个带“+”的正方形方块 */
+.pw-grid.is-empty {
+  padding: 10px;
+  border: 1px dashed rgba(122, 122, 132, 0.46);
+  border-radius: 16px;
+  background: rgba(122, 122, 132, 0.06);
+}
+
+.pw-empty__text {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.55;
+  text-align: center;
+  color: var(--b-muted, #6f6f78);
+}
+
+/* ---------- 组件库里的「相册照片」行 ---------- */
+.fold__chip--photo {
+  border-color: rgba(122, 122, 132, 0.5);
+}
+
+/* ---------- 窄屏：三列太挤时退回两列 ---------- */
+@media (max-width: 340px) {
+  .pw-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

@@ -1306,16 +1306,22 @@ body[data-view="call"] .island__wave b:nth-child(3) { animation-delay: 0.32s; }
 .appgrid__item span { font-size: 10.5px; letter-spacing: 0.18em; color: var(--ink-2); }
 .appgrid__item .badge {
   position: absolute;
-  transform: translate(16px, -6px);
+  top: 0;
+  right: 0;
+  transform: translate(30%, -30%);
   min-width: 16px;
   height: 16px;
-  padding: 0 4px;
+  padding: 0 3px;
   border-radius: var(--r-pill);
   background: var(--ink);
   color: var(--surface);
   font-family: var(--font-num);
-  font-size: 9.5px;
+  font-size: 10px;
   line-height: 16px;
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+  box-sizing: border-box;
   box-shadow: 0 0 0 2px var(--surface);
 }
 
@@ -1397,51 +1403,7 @@ body[data-view="call"] .island__wave b:nth-child(3) { animation-delay: 0.32s; }
 .today__task-meta { font-size: 10px; letter-spacing: 0.16em; color: var(--ink-4); }
 .today__empty { font-size: 11px; letter-spacing: 0.1em; color: var(--ink-4); padding: var(--sp-1) 0; }
 
-.card--now {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-3);
-  padding-right: var(--sp-6);
-  transition: box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
-}
-
-.card--now:active { box-shadow: var(--in); transform: scale(0.985); }
-
-.now__disc {
-  position: relative;
-  flex: 0 0 auto;
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 50% 50%, var(--surface-2) 0 22%, var(--surface-3) 23% 100%);
-  box-shadow: var(--in-deep);
-  display: grid;
-  place-items: center;
-}
-
-.now__disc span {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: var(--ink);
-  box-shadow: 0 0 0 3px var(--glass);
-}
-
-.now__disc.is-spin { animation: spin 6s linear infinite; }
-
-.now__meta { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-.now__label { font-size: 9.5px; letter-spacing: 0.28em; color: var(--ink-4); }
-.now__title { font-size: 13.5px; letter-spacing: 0.08em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.now__artist { font-size: 10.5px; letter-spacing: 0.12em; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-.now__bars { flex: 0 0 auto; display: flex; align-items: flex-end; gap: 2.5px; height: 22px; }
-.now__bars i { width: 2.5px; height: 30%; border-radius: var(--r-pill); background: var(--ink-4); }
-.card--now.is-playing .now__bars i { background: var(--ink-2); animation: nowBar 1.1s var(--ease) infinite; }
-
-@keyframes nowBar {
-  0%, 100% { height: 22%; }
-  50% { height: 100%; }
-}
+/* 原「正在播放」音乐卡片（.card--now / .now__disc / .now__bars / nowBar）已随音乐页下线 */
 
 .card__go {
   position: absolute;
@@ -2088,7 +2050,6 @@ body[data-view="call"] .island__wave b:nth-child(3) { animation-delay: 0.32s; }
   .hero__clock { font-size: 44px; }
   .orb.orb--hero { width: 74px; height: 74px; }
   .dock__item { height: 44px; }
-  .now__disc { width: 46px; height: 46px; }
   .spark__bars { height: 44px; }
 }
 
@@ -2122,4 +2083,152 @@ html, body {
 .card, .home__page, #app-root {
   max-width: 100vw !important;
   box-sizing: border-box !important;
+}
+
+/* ---------- 18. 开屏动画（Splash Screen）· SVG 星轨 + 品牌艺术字 + 景深光斑 ---------- */
+/* 纯视觉遮罩：只盖住页面，不拦截也不参与任何加载逻辑。
+   z-index 高于项目内最高层（kalia.css 的 12000），才能盖住一切。 */
+#splash-screen {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  background: linear-gradient(135deg, #eaf1f9 0%, #f7f9fc 100%);
+  z-index: 999999; display: flex; flex-direction: column;
+  justify-content: center; align-items: center;
+  transition: opacity 1s ease, visibility 1s ease; overflow: hidden;
+}
+#splash-screen.hide-splash { opacity: 0; visibility: hidden; }
+
+.splash-container {
+  position: relative; width: 260px; height: 260px;
+  display: flex; justify-content: center; align-items: center;
+}
+
+/* 星轨保留，稍微调整透明度 */
+.orbit-svg {
+  position: absolute; width: 100%; height: 100%;
+  animation: slow-rotate 20s linear infinite;
+}
+.orbit-line {
+  fill: none; stroke: rgba(120, 150, 180, 0.35); stroke-width: 1.2; stroke-linecap: round;
+}
+.line-1 { stroke-dasharray: 120 200; animation: dash-rotate 8s linear infinite; }
+.line-2 { stroke-dasharray: 80 150; animation: dash-rotate 12s linear infinite reverse; }
+.line-3 { stroke-dasharray: 40 100; animation: dash-rotate 6s linear infinite; }
+
+/* 中心光晕 */
+.center-glow {
+  position: absolute; width: 120px; height: 120px;
+  background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0) 70%);
+  border-radius: 50%; animation: glow-pulse 2.5s ease-in-out infinite alternate;
+}
+
+/* ======= 核心：Callia Phone 欧式艺术连笔手写体 ======= */
+.brand-title {
+  position: absolute;
+  top: 40%; /* 稍微往上调一点点，留出下方空间 */
+
+  /* 优先使用 Dancing Script，如果不加载则回退到系统手写体 */
+  font-family: 'Dancing Script', 'Great Vibes', 'Brush Script MT', cursive !important;
+  font-size: 52px; /* 连笔字通常显得小，要放大字号 */
+  font-weight: 500;
+  color: #3b4d5e;
+
+  /* 实现倾斜动感 */
+  font-style: italic;
+  transform: rotate(-6deg) skewX(-5deg); /* 整体微微向左倾斜 */
+
+  opacity: 0;
+  /* 入场动画：在倾斜和放大的过程中渐显 */
+  animation: fade-in-tilt 2.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  text-shadow: 2px 4px 15px rgba(255,255,255,0.9); /* 白色立体阴影，让连笔更清晰 */
+  z-index: 10;
+  white-space: nowrap;
+}
+
+/* 景深光斑（Bokeh） */
+.bokeh {
+  position: absolute; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+  filter: blur(4px); z-index: 1;
+}
+.b1 { width: 15px; height: 15px; top: 10%; left: 80%; animation: float-b1 6s infinite alternate; }
+.b2 { width: 25px; height: 25px; top: 85%; left: 15%; animation: float-b2 8s infinite alternate; filter: blur(6px); background: rgba(180, 210, 240, 0.4); }
+.b3 { width: 10px; height: 10px; top: 70%; left: 85%; animation: float-b1 5s infinite alternate-reverse; }
+
+/* 闪烁星星 */
+.star {
+  position: absolute; width: 3px; height: 3px; background: #fff; border-radius: 50%;
+  box-shadow: 0 0 10px 2px rgba(255, 255, 255, 1), 0 0 15px 3px rgba(180, 210, 240, 0.8);
+  z-index: 2; animation: twinkle 2s infinite alternate;
+}
+.star-a { top: 10%; left: 30%; animation-delay: 0.2s; }
+.star-b { top: 25%; left: 85%; animation-delay: 1.2s; width: 2px; height: 2px; }
+.star-c { top: 65%; left: 10%; animation-delay: 0.8s; }
+.star-d { top: 85%; left: 70%; animation-delay: 1.5s; width: 4px; height: 4px; }
+.star-e { top: 45%; left: 90%; animation-delay: 0.5s; width: 2px; height: 2px; }
+.star-f { top: 50%; left: 15%; animation-delay: 1s; }
+
+/* 底部小字 */
+.splash-text {
+  margin-top: 20px; font-size: 12px; color: #7a8c9e;
+  letter-spacing: 3px; animation: fade-text 3s ease-in-out infinite alternate;
+}
+
+/* ======= 动画 ======= */
+@keyframes slow-rotate { 100% { transform: rotate(360deg); } }
+@keyframes dash-rotate { 0% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -320; } }
+@keyframes glow-pulse { 0% { transform: scale(0.8); opacity: 0.5; } 100% { transform: scale(1.2); opacity: 1; } }
+@keyframes twinkle { 0% { opacity: 0.1; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1.3); } }
+
+/* 文字逐渐显现并轻微上浮 */
+@keyframes fade-in-up {
+  0% { opacity: 0; transform: translateY(15px); letter-spacing: 1px; }
+  100% { opacity: 1; transform: translateY(0); letter-spacing: 3px; }
+}
+
+/* 光斑浮动 */
+@keyframes float-b1 { 0% { transform: translateY(0) scale(1); } 100% { transform: translateY(-20px) scale(1.2); } }
+@keyframes float-b2 { 0% { transform: translateY(0) scale(1); } 100% { transform: translateY(30px) scale(0.8); } }
+@keyframes fade-text { 0% { opacity: 0.3; } 100% { opacity: 1; } }
+
+/* 品牌字入场：从下方浮起并逐渐倾斜到最终姿态 */
+@keyframes fade-in-tilt {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) rotate(0deg) skewX(0deg) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) rotate(-6deg) skewX(-5deg) scale(1);
+  }
+}
+
+/* ======= 强化版流星雨特效 ======= */
+.meteor {
+  position: absolute;
+  height: 3px;
+  width: 220px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.9) 70%, #ffffff 100%);
+  border-radius: 50%;
+  opacity: 0;
+  transform: rotate(45deg);
+  box-shadow: 0 0 15px 3px rgba(255, 255, 255, 0.8), 0 0 25px 5px rgba(160, 200, 240, 0.5);
+  z-index: 5;
+}
+
+/* 为 9 颗流星分配不同的位置、速度和延迟，错落有致 */
+.meteor-1 { top: -5%; left: -15%; animation: meteor-fly-long 2.5s cubic-bezier(0.3, 0.1, 0.6, 0.9) infinite; animation-delay: 0.1s; }
+.meteor-2 { top: -10%; left: 20%; width: 180px; animation: meteor-fly-long 3s cubic-bezier(0.3, 0.1, 0.6, 0.9) infinite; animation-delay: 1.2s; }
+.meteor-3 { top: 0%; left: 60%; animation: meteor-fly-long 2.2s cubic-bezier(0.3, 0.1, 0.6, 0.9) infinite; animation-delay: 2.5s; }
+.meteor-4 { top: -15%; left: 80%; width: 150px; animation: meteor-fly-long 2.8s cubic-bezier(0.3, 0.1, 0.6, 0.9) infinite; animation-delay: 0.8s; }
+.meteor-5 { top: 10%; left: -25%; width: 250px; height: 4px; animation: meteor-fly-long 3.5s cubic-bezier(0.3, 0.1, 0.6, 0.9) infinite; animation-delay: 3.5s; }
+.meteor-6 { top: 30%; left: 10%; width: 120px; height: 2px; animation: meteor-fly-long 2s cubic-bezier(0.3, 0.1, 0.6, 0.9) infinite; animation-delay: 1.8s; }
+.meteor-7 { top: -20%; left: 40%; animation: meteor-fly-long 2.6s cubic-bezier(0.3, 0.1, 0.6, 0.9) infinite; animation-delay: 4.2s; }
+.meteor-8 { top: 15%; left: 85%; width: 180px; animation: meteor-fly-long 2.4s cubic-bezier(0.3, 0.1, 0.6, 0.9) infinite; animation-delay: 2.1s; }
+.meteor-9 { top: -8%; left: 5%; width: 200px; height: 4px; animation: meteor-fly-long 3.2s cubic-bezier(0.3, 0.1, 0.6, 0.9) infinite; animation-delay: 5s; }
+
+@keyframes meteor-fly-long {
+  0% { opacity: 0; transform: translate(0, 0) rotate(45deg); }
+  10% { opacity: 1; }
+  70% { opacity: 1; }
+  100% { opacity: 0; transform: translate(700px, 700px) rotate(45deg); }
 }

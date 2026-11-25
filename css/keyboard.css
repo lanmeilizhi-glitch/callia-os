@@ -71,14 +71,25 @@ html body {
 
 /* 状态栏、底部返回条、Dock 与应用层一律钉在屏幕表面（.screen）上，
    不再钉在浏览器视口上：屏幕变矮时它们跟着贴着键盘上沿，不会整体上浮。 */
+/* 状态栏、返回条与应用层钉在 .screen 上。Dock 不在此列：底栏改用 fixed 贴底，
+   由文件末尾的强制层统一接管，避免 absolute 与历史 grid 规则叠加造成图标重叠。 */
 .statusbar,
 .homebar,
-.dock,
 .app-layer {
   position: absolute !important;
 }
 
 /* ---------- 应用层：上中下三段 Flex（顶栏 / 滚动区 / 输入区） ---------- */
+/* 应用层在基础层用 padding-top 让开状态栏，而本文件顶部已把它改成
+   position: absolute; inset: 0（铺满整块 .screen）。两者叠加后，应用页的
+   顶栏会被整层往下推一个状态栏高度，返回按钮（.app-head__back）因此跑到
+   可视区上方。这里把基础层那份 padding 归零，纵向让位统一交给下面
+   .app-screen 的 padding-top（--safe-app-top）负责，不再双重累加。 */
+.screen .app-layer {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
 /* 应用表面跟随屏幕高度收缩，内部只允许消息区自己滚动，
    否则长聊天记录会把输入条顶出屏幕，看起来又像整页上浮。 */
 .app-screen {
@@ -338,53 +349,19 @@ html[data-kb] .chat__quick {
   margin-right: 14px;
 }
 
-/* ---------- 底部导航栏（Dock）：贴底全宽，不再是悬浮圆角块 ---------- */
-/* 视觉效果等价于 position: fixed; bottom: 0; left: 0; width: 100%：本文件顶部已把
-   .dock 钉在 .screen 上，而 .screen 经 html / body / .stage / .device 的 100dvh
-   Flex 链严格等于可见视口，所以 bottom: 0 量到的就是屏幕底边。
-   刻意保留 absolute 而不是 fixed：软键盘弹起时 fixed 会让整条导航栏浮到键盘上方，
-   这正是本安全层要防的问题。 */
+/* ---------- 底部导航栏（Dock）：几何全部交给文件末尾的强制层 ---------- */
+/* 这里只保留与几何无关的观感（描边、玻璃底、圆角归零）。旧的
+   .screen .dock / #dock-diary-entry 规则已删除：absolute + 左右 auto 居中会让
+   「日记」按钮脱离四等分格，与相邻图标重叠并吃掉点击热区。 */
 .screen .dock {
-  box-sizing: border-box;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  width: 100% !important;
-  max-width: none !important;
-  min-width: 0;
-  margin: 0 !important;
-  transform: none !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
   border: 0;
   border-top: 1px solid var(--glass-border);
   background: var(--glass-strong);
   -webkit-backdrop-filter: var(--glass-blur);
   backdrop-filter: var(--glass-blur);
-  padding: 8px 10px;
-  padding-left: calc(10px + var(--sa-left));
-  padding-right: calc(10px + var(--sa-right));
-  /* 只让开系统手势条，不再额外悬浮抬高 */
-  padding-bottom: calc(8px + var(--sa-bottom));
 }
 
-/* 四个图标在整条导航栏内等分：:not([hidden]) 让 hidden 时仍走基础层的
-   display: none，锁屏与应用内不会漏出来（os.js 的 syncDock 按 data-view 切换）。 */
-body[data-view="home"] .screen .dock:not([hidden]) {
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-}
-
-.screen .dock .dock__item {
-  flex: 1 1 0;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* 底部悬浮导航栏只在桌面（Home）出现：路由状态由 body[data-view] 表示，
+/* 导航栏只在桌面（Home）出现：路由状态由 body[data-view] 表示，
    进入任何应用（含与伴侣的聊天页）时一律收起，聊天界面底部不再被压住。
    display 兼作 JS 条件渲染的兜底，[hidden] 失效时也不会漏出来。 */
 body:not([data-view="home"]) .dock {

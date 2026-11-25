@@ -658,3 +658,71 @@ html[data-theme="dark"] .pager__add {
     animation: none;
   }
 }
+
+/* =====================================================================
+   九宫格图标：强制小正方形（追加在文件最后，用 !important 覆盖前面
+   base.css / home-widgets.css 里较大的胶囊尺寸与圆角）
+   只作用于 .appgrid 里的 .appgrid__item，不碰底部 Dock（.dock/.dock__item）
+   和伴侣大卡（#widget-companion / .card--hero）。
+   ===================================================================== */
+.appgrid {
+  justify-content: center !important;
+  justify-items: center !important;
+  align-content: start !important;
+  gap: 12px !important;
+  margin-inline: auto !important;
+}
+
+.appgrid__item {
+  width: 80px !important;
+  height: 80px !important;
+  aspect-ratio: 1 / 1 !important;
+  box-sizing: border-box !important;
+  border-radius: 16px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px !important;
+  padding: 8px 4px !important;
+  margin: 0 auto !important;
+}
+
+/* 图标位与自定义图片同步缩小 */
+.appgrid__item .ico,
+.appgrid__item .ico.is-custom {
+  width: 24px !important;
+  height: 24px !important;
+  font-size: 24px !important;
+}
+
+.appgrid__item .ico img {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 6px !important;
+}
+
+/* 名称字号收紧，保证在正方形里居中不溢出 */
+.appgrid__item span {
+  font-size: 12px !important;
+  line-height: 1.15 !important;
+  letter-spacing: 0.04em !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+/* 未读角标：只缩小数字气泡本身（16px / 10px），双位数自动拉长成小胶囊。
+   卡片宽高、图标位和底栏样式都不在这里改动。 */
+.appgrid__item .badge {
+  top: 0 !important;
+  right: 0 !important;
+  transform: translate(30%, -30%) !important;
+  min-width: 16px !important;
+  width: auto !important;
+  height: 16px !important;
+  padding: 0 3px !important;
+  font-size: 10px !important;
+  line-height: 16px !important;
+}

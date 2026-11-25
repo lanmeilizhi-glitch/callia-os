@@ -738,7 +738,7 @@
       if (typeof global.openStepsModal === "function") global.openStepsModal();
       else addSteps();
     }
-    /* 睡眠 / 花销 / 天气 / 专注 / 习惯 / 安排 / 音乐：都改为打开各自的底部弹窗 */
+    /* 睡眠 / 花销 / 天气 / 专注 / 习惯 / 安排：都打开各自的底部弹窗 */
     else if (action === "sleep-edit") {
       if (typeof global.openSleepModal === "function") global.openSleepModal();
     }
@@ -756,9 +756,6 @@
     }
     else if (action === "plan-edit") {
       if (typeof global.openPlanModal === "function") global.openPlanModal();
-    }
-    else if (action === "music-edit") {
-      if (typeof global.openMusicModal === "function") global.openMusicModal();
     }
     else if (action === "focus-toggle") toggleFocus();
     else if (action === "focus-reset") resetFocus();

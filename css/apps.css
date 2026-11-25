@@ -243,6 +243,470 @@
 
 .chat__foot { padding-top: 0; }
 
+/* ---------- 底栏扩展图标：图片 / 红包 ----------
+   图标直接用用户给的 SVG（stroke="currentColor"），颜色只靠 color 继承，
+   尺寸锁在按钮里，SVG 自己不会抻大布局。 */
+.chat__tools {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--ink-3);
+}
+
+.chat__tool {
+  width: 34px;
+  height: 46px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-pill);
+  color: inherit;
+  transition: transform var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+
+.chat__tool svg {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+
+.chat__tool:active {
+  transform: scale(0.9);
+  color: var(--ink);
+}
+
+/* ---------- 表情包面板：输入框上方的毛玻璃横排 ----------
+   默认 hidden，点图片图标才露出来；格子渲染 store.customStickers，
+   末尾永远跟一个线框「+」号卡片。 */
+.chat__picker {
+  flex: 0 0 auto;
+  display: flex;
+  gap: var(--sp-2);
+  margin: 0 var(--sp-4) var(--sp-2);
+  padding: 10px;
+  border-radius: var(--r-lg);
+  background: var(--glass);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), var(--glass-top);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  animation: rise 0.24s var(--ease) both;
+}
+
+.chat__picker[hidden] {
+  display: none;
+}
+
+.chat__picker-cell {
+  flex: 0 0 auto;
+  width: 72px;
+  height: 72px;
+  padding: 0;
+  overflow: hidden;
+  border-radius: var(--r-sm);
+  background: var(--glass-soft);
+  border: 1px solid var(--glass-border);
+  transition: transform var(--dur-fast) var(--ease);
+}
+
+.chat__picker-cell:active {
+  transform: scale(0.94);
+}
+
+.chat__picker-cell img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  pointer-events: none;
+}
+
+/* 末尾的「+」号：只留描边线框，颜色走 currentColor，跟底栏图标一个风格。
+   长按删除时浏览器默认会弹图片菜单与文字选区，这里一并关掉。 */
+.chat__picker-cell--add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-3);
+  background: transparent;
+  border-style: dashed;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.chat__picker-cell--add:active {
+  color: var(--ink);
+  background: var(--glass-soft);
+}
+
+.chat__picker-cell--add svg {
+  width: 24px;
+  height: 24px;
+  display: block;
+  pointer-events: none;
+}
+
+/* 隐藏的选图控件：不占位也不参与布局 */
+#chat-sticker-file[hidden] {
+  display: none;
+}
+
+/* ---------- 图片消息：不套气泡，直接一张限定尺寸的圆角图 ---------- */
+#chat-log .msg--image .msg__image {
+  width: 120px;
+  height: 120px;
+  max-width: 100%;
+  display: block;
+  object-fit: cover;
+  border-radius: var(--r-md);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-soft);
+  box-shadow: var(--glass-shadow);
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ---------- 红包面板：输入框上方的毛玻璃卡片 ----------
+   默认 hidden，点红包图标才露出来；金额框复用 .field，快捷金额只是一排小胶囊。 */
+.chat__redpacket {
+  flex: 0 0 auto;
+  margin: 0 var(--sp-4) var(--sp-2);
+  padding: 12px;
+  border-radius: var(--r-lg);
+  background: var(--glass);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), var(--glass-top);
+  animation: rise 0.24s var(--ease) both;
+}
+
+.chat__redpacket[hidden] {
+  display: none;
+}
+
+.rp__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  margin-bottom: 8px;
+}
+
+.rp__title {
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  color: var(--ink-2);
+}
+
+.rp__balance {
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  color: var(--ink-3);
+}
+
+.rp__balance b { color: var(--ink); font-weight: 600; }
+
+.rp__field { min-height: 42px; }
+
+.rp__yuan {
+  flex: 0 0 auto;
+  font-size: 14px;
+  color: var(--ink-3);
+}
+
+.rp__quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.rp__chip {
+  min-width: 46px;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: var(--r-pill);
+  background: var(--glass-soft);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--in);
+  color: var(--ink-2);
+  font-size: 12px;
+  font-family: var(--font-num);
+  transition: transform var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+
+.rp__chip:active {
+  transform: scale(0.94);
+  color: var(--ink);
+}
+
+.rp__send {
+  width: 100%;
+  min-height: 40px;
+  margin-top: 10px;
+  font-size: 13px;
+  letter-spacing: 0.16em;
+}
+
+/* ---------- 红包消息卡片：微信那样的红底金边小卡片（约 200×80） ----------
+   卡片不参与四套材质切换，自己带红底白字，明暗主题下都用同一套固定色。
+   金额不在卡片上出现，只写标题与领取状态；点整张卡片弹拆红包弹窗。 */
+#chat-log .rp-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 200px;
+  height: 80px;
+  padding: 0 12px;
+  box-sizing: border-box;
+  text-align: left;
+  border: 1px solid rgba(255, 208, 128, 0.72);
+  border-radius: var(--r-md);
+  background: linear-gradient(140deg, #f0603f 0%, #d92b2b 52%, #b81f28 100%);
+  color: #fff7ef;
+  box-shadow: 0 10px 24px rgba(200, 32, 42, 0.3), inset 0 1px 0 rgba(255, 226, 170, 0.34);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform var(--dur-fast) var(--ease);
+}
+
+#chat-log .rp-card:active {
+  transform: scale(0.97);
+}
+
+#chat-log .rp-card__icon {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffe6ad;
+}
+
+#chat-log .rp-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+#chat-log .rp-card__title {
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#chat-log .rp-card__status {
+  padding-top: 5px;
+  border-top: 1px dashed rgba(255, 236, 200, 0.4);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  color: rgba(255, 246, 242, 0.92);
+}
+
+/* 已领取：整张卡片转暗色调，状态行写「已领取」 */
+#chat-log .rp-card[data-status="claimed"] {
+  border-color: rgba(190, 176, 160, 0.4);
+  background: linear-gradient(140deg, #8d7066 0%, #6f5350 60%, #57403f 100%);
+  color: rgba(255, 246, 242, 0.72);
+  box-shadow: 0 6px 16px rgba(70, 50, 46, 0.26);
+}
+
+#chat-log .rp-card[data-status="claimed"] .rp-card__icon {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 232, 200, 0.6);
+}
+
+#chat-log .rp-card[data-status="claimed"] .rp-card__status {
+  border-top-color: rgba(255, 240, 226, 0.24);
+  color: rgba(255, 246, 242, 0.62);
+}
+
+/* ---------- 拆红包弹窗：全屏毛玻璃遮罩 + 中间大红卡 ----------
+   遮罩常驻 body（z-index 高于顶栏与弹层），点空白处关闭。 */
+/* 遮罩：中性深色半透明，不跟着红包一起变红 */
+.rp-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(28, 28, 30, 0.5);
+  -webkit-backdrop-filter: blur(16px) saturate(1.05);
+  backdrop-filter: blur(16px) saturate(1.05);
+  animation: rpMaskIn 0.22s var(--ease) both;
+}
+
+html[data-theme="dark"] .rp-mask {
+  background: rgba(12, 12, 14, 0.62);
+}
+
+.rp-mask[hidden] {
+  display: none;
+}
+
+@keyframes rpMaskIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.rp-modal {
+  position: relative;
+  width: 268px;
+  max-width: 100%;
+  padding: 26px 20px 20px;
+  border-radius: var(--r-lg);
+  /* 与聊天页同一套毛玻璃质感：亮色主题下接近白的半透明，暗色主题下深色半透明，
+     变量由 base.css / themes.css 按 html[data-theme] 自动切换，不再是大红大橙。 */
+  border: 1px solid rgba(176, 132, 68, 0.34);
+  background: var(--glass);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  color: var(--ink);
+  box-shadow: var(--glass-shadow), var(--glass-top), 0 22px 54px rgba(20, 18, 18, 0.22);
+  text-align: center;
+  animation: rpModalIn 0.28s var(--ease) both;
+}
+
+/* 暗色主题：边框收一点金色，整体更暗更克制 */
+html[data-theme="dark"] .rp-modal {
+  border-color: rgba(198, 158, 92, 0.26);
+}
+
+@keyframes rpModalIn {
+  from { opacity: 0; transform: translateY(14px) scale(0.94); }
+  to { opacity: 1; transform: none; }
+}
+
+.rp-modal__close {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--glass-soft);
+  color: var(--ink-2);
+  font-size: 19px;
+  line-height: 1;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.rp-modal__close:active {
+  background: var(--glass-border);
+}
+
+.rp-modal__face {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-height: 150px;
+  justify-content: center;
+}
+
+/* 中心头像：真实头像图片，64px 圆形；拿不到图片时退回一个中性 Emoji 圆块，
+   不再是系统默认的那个蓝色小人。 */
+.rp-modal__avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  object-fit: cover;
+  background: var(--glass-soft);
+  border: 1px solid rgba(176, 132, 68, 0.3);
+  box-shadow: 0 4px 14px rgba(30, 24, 20, 0.14);
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.rp-modal__title {
+  margin-top: 10px;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  color: var(--ink-2);
+}
+
+/* 大大的「开」字按钮：只留一点点金色做红包暗示，其余交给主题变量 */
+.rp-modal__open {
+  margin-top: 14px;
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  border: 1px solid rgba(176, 132, 68, 0.42);
+  background: var(--glass-soft);
+  color: #a8762f;
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: 0;
+  box-shadow: 0 10px 24px rgba(60, 44, 20, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform var(--dur-fast) var(--ease);
+}
+
+html[data-theme="dark"] .rp-modal__open {
+  color: #d9b070;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.rp-modal__open:active {
+  transform: scale(0.94);
+}
+
+/* 金额：淡淡的金色，暗色主题下稍微提亮 */
+.rp-modal__amount {
+  margin-top: 10px;
+  font-size: 38px;
+  font-weight: 700;
+  line-height: 1.15;
+  color: #b08a3e;
+  text-shadow: none;
+}
+
+html[data-theme="dark"] .rp-modal__amount {
+  color: #d8b469;
+}
+
+.rp-modal__unit {
+  font-size: 10.5px;
+  letter-spacing: 0.24em;
+  color: var(--ink-3);
+}
+
+.rp-modal__note {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--glass-border);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  line-height: 1.7;
+  color: var(--ink-3);
+}
+
 .chat__send {
   width: 46px;
   min-width: 46px;
@@ -682,239 +1146,114 @@
 .task.is-done .task__check::after { transform: rotate(-45deg) scale(1); }
 .task.is-done .task__title { color: var(--ink-4); text-decoration: line-through; }
 
-/* ---------- 音乐 ---------- */
-.player {
+/* ---------- Zane 的日记本（原播放器与歌单样式已下线）---------- */
+.diary-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.diary__empty {
+  padding: var(--sp-5) var(--sp-3);
+  text-align: center;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: var(--ink-4);
+}
+
+.diary-card {
   padding: var(--sp-4);
-  border-radius: var(--r-xl);
+  border-radius: var(--r-lg);
   background: var(--glass);
   -webkit-backdrop-filter: var(--glass-blur);
   backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow-lg), var(--glass-top);
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-4);
-}
-
-.player__art {
-  position: relative;
-  height: 168px;
-  border-radius: var(--r-lg);
-  background: linear-gradient(160deg, var(--surface-3), var(--surface-2));
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--in-deep);
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-}
-
-.player__disc {
-  width: 118px;
-  height: 118px;
-  border-radius: 50%;
-  background: var(--glass-strong);
-  border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow), var(--glass-top);
-  display: grid;
-  place-items: center;
-  position: relative;
 }
 
-.player__disc::before {
-  content: "";
-  position: absolute;
-  inset: 14px;
-  border-radius: 50%;
-  border: 1px solid var(--line);
-}
-
-.player__disc::after {
-  content: "";
-  position: absolute;
-  inset: 42px;
-  border-radius: 50%;
-  background: var(--ink);
-}
-
-.player__disc.is-spin { animation: spin 9s linear infinite; }
-
-.player__viz {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 46px;
+.diary-card__head {
   display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  gap: 3px;
-  padding: 0 var(--sp-4) var(--sp-2);
-}
-
-.player__viz i {
-  width: 3px;
-  height: 6px;
-  border-radius: var(--r-pill);
-  background: var(--ink-3);
-  transition: height 0.18s linear, opacity 0.18s linear;
-  opacity: 0.45;
-}
-
-.player__meta { text-align: center; }
-.player__meta p:first-child { font-size: 15px; letter-spacing: 0.1em; }
-.player__meta p:last-child { margin-top: 5px; font-size: 11px; letter-spacing: 0.16em; color: var(--ink-3); }
-
-.player__bar {
-  height: 8px;
-  border-radius: var(--r-pill);
-  box-shadow: var(--in);
-  position: relative;
-  cursor: pointer;
-}
-
-.player__bar i {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 0;
-  border-radius: var(--r-pill);
-  background: var(--ink);
-}
-
-.player__bar b {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  width: 14px;
-  height: 14px;
-  margin: -7px 0 0 -7px;
-  border-radius: 50%;
-  background: var(--glass-strong);
-  border: 1px solid var(--glass-border);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
-  transition: transform var(--dur-fast) var(--ease);
-}
-
-.player__bar:active b { transform: scale(1.18); }
-
-.player__times {
-  display: flex;
+  align-items: baseline;
   justify-content: space-between;
+  gap: var(--sp-2);
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.diary-card__date {
   font-family: var(--font-num);
-  font-size: 10.5px;
+  font-size: 11.5px;
+  letter-spacing: 0.14em;
   color: var(--ink-3);
   font-variant-numeric: tabular-nums;
-  margin-top: 7px;
 }
 
-.player__ctrls {
+.diary-card__body {
+  font-size: 14px;
+  line-height: 1.85;
+  letter-spacing: 0.02em;
+  color: var(--ink-2);
+  word-break: break-word;
+}
+
+.diary-card__body p { margin: 0 0 10px; }
+.diary-card__body p:last-child { margin-bottom: 0; }
+.diary-card__body ul {
+  margin: 0 0 10px;
+  padding-left: 18px;
+  list-style: disc;
+}
+.diary-card__body li { margin-bottom: 4px; }
+.diary__block + .diary__block { margin-top: 4px; }
+
+/* 静默生成时的加载态：三个小点呼吸，没有定时器 */
+.diary-loading {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: var(--sp-4);
-}
-
-.ctrl {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: var(--glass);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow), var(--glass-top);
-  display: grid;
-  place-items: center;
-  position: relative;
-  transition: box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease),
-	background var(--dur-fast) var(--ease);
-}
-
-.ctrl:active {
-  box-shadow: var(--in);
-  background: var(--glass-soft);
-  transform: scale(0.95);
-}
-
-.ctrl--play {
-  width: 66px;
-  height: 66px;
-  background: var(--ink);
-  border-color: transparent;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
-}
-
-.ctrl--play:active {
-  background: var(--ink-2);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
-}
-
-.ctrl--play .ctrl__play::after { border-left-color: var(--surface); }
-.ctrl--play .ctrl__pause::before,
-.ctrl--play .ctrl__pause::after { background: var(--surface); }
-
-.ctrl__prev,
-.ctrl__next { width: 13px; height: 13px; border-left: 1.8px solid var(--ink); border-bottom: 1.8px solid var(--ink); }
-.ctrl__prev { transform: rotate(45deg) translate(-1px, 1px); }
-.ctrl__next { transform: rotate(-135deg) translate(-1px, 1px); }
-
-.ctrl__play,
-.ctrl__pause { position: relative; width: 20px; height: 22px; }
-
-.ctrl__play::after {
-  content: "";
-  position: absolute;
-  left: 4px;
-  top: 1px;
-  width: 0;
-  height: 0;
-  border-left: 15px solid var(--ink);
-  border-top: 10px solid transparent;
-  border-bottom: 10px solid transparent;
-}
-
-.ctrl__pause::before,
-.ctrl__pause::after {
-  content: "";
-  position: absolute;
-  top: 1px;
-  width: 5px;
-  height: 20px;
-  border-radius: 2px;
-  background: var(--ink);
-}
-
-.ctrl__pause::before { left: 2px; }
-.ctrl__pause::after { right: 2px; }
-
-.player__note { text-align: center; font-size: 10px; letter-spacing: 0.14em; color: var(--ink-4); }
-
-.playlist { display: flex; flex-direction: column; gap: var(--sp-2); }
-
-.track {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-3);
-  width: 100%;
-  text-align: left;
-  padding: var(--sp-3) var(--sp-4);
+  gap: 10px;
+  margin-bottom: var(--sp-3);
+  padding: 12px var(--sp-4);
   border-radius: var(--r-md);
   background: var(--glass-soft);
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow);
-  transition: box-shadow var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
 }
 
-.track:active { box-shadow: var(--in); background: var(--surface-2); }
-.track__idx { font-family: var(--font-num); font-size: 11px; color: var(--ink-4); width: 18px; flex: 0 0 auto; }
-.track__body { flex: 1 1 auto; min-width: 0; }
-.track__body > span:first-child { display: block; font-size: 13px; letter-spacing: 0.04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.track__body > span:last-child { display: block; margin-top: 4px; font-size: 10px; letter-spacing: 0.14em; color: var(--ink-3); }
-.track__dur { font-family: var(--font-num); font-size: 11px; color: var(--ink-3); flex: 0 0 auto; }
-.track.is-on {
-  background: var(--glass-strong);
-  box-shadow: var(--in);
+.diary-loading[hidden] { display: none; }
+
+.diary-loading__text {
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  color: var(--ink-3);
 }
-.track.is-on .track__body > span:first-child { letter-spacing: 0.08em; }
+
+.diary-loading__dots {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 12px;
+}
+
+.diary-loading__dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ink-3);
+  animation: diaryDot 1.1s ease-in-out infinite;
+}
+
+.diary-loading__dots i:nth-child(2) { animation-delay: 0.18s; }
+.diary-loading__dots i:nth-child(3) { animation-delay: 0.36s; }
+
+@keyframes diaryDot {
+  0%, 100% { opacity: 0.28; transform: translateY(0); }
+  50% { opacity: 0.95; transform: translateY(-4px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .diary-loading__dots i { animation: none; }
+}
 
 /* ---------- 记忆 ---------- */
 .mem-grid {

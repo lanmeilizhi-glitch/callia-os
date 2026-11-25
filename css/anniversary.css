@@ -1,0 +1,139 @@
+/* =========================================================
+   Companion OS · anniversary.css
+   纪念日（倒数日）页面：只作用于 .anncard / .ann-* 与 #ann-* 节点，
+   顶部导航与输入区复用 base.css 的 .app-head / .field / .chip，
+   卡片沿用「记忆」页那套毛玻璃令牌（--glass / --glass-border / --glass-shadow）。
+   ========================================================= */
+
+/* ---------- 底部输入区：事件名一行，日期 + 添加一行 ---------- */
+.ann-foot {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--sp-2);
+}
+
+.ann-foot .field input[type="date"] {
+  min-height: 44px;
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  color: var(--ink-2);
+  background: transparent;
+  border: 0;
+  outline: none;
+  font-family: inherit;
+}
+
+.ann-foot .field input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0.55;
+}
+
+/* ---------- 卡片列表 ---------- */
+.ann-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-3);
+}
+
+/* 窄屏（含 720px 以下的手机竖屏）退回单列，长标题不会被挤断 */
+@media (max-width: 420px) {
+  .ann-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+.anncard {
+  position: relative;
+  display: block;
+  text-align: left;
+  padding: var(--sp-4) var(--sp-4) var(--sp-4);
+  border-radius: var(--r-md);
+  background: var(--glass);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), var(--glass-top);
+  overflow: hidden;
+  transition: box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease),
+    background var(--dur-fast) var(--ease);
+}
+
+.anncard:active {
+  box-shadow: var(--in);
+  transform: scale(0.985);
+  background: var(--glass-soft);
+}
+
+.anncard__main { display: block; min-width: 0; padding-right: var(--sp-6); }
+
+.anncard__title {
+  font-size: 12.5px;
+  letter-spacing: 0.06em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.anncard__status {
+  margin-top: 7px;
+  font-size: 11px;
+  line-height: 1.7;
+  letter-spacing: 0.04em;
+  color: var(--ink-2);
+}
+
+/* 天数用等宽数字，倒数跳动时不会左右抖 */
+.anncard__status .ann-num {
+  font-family: var(--font-num);
+  font-variant-numeric: tabular-nums;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--ink);
+  padding: 0 2px;
+}
+
+.anncard__date {
+  margin-top: 8px;
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  color: var(--ink-4);
+  font-family: var(--font-num);
+}
+
+/* 三种状态的细边提示：未来 / 今天 / 已过去 */
+.anncard--future { border-left: 2px solid var(--glass-border); }
+.anncard--today { border-left: 2px solid var(--ink-3); }
+.anncard--past { opacity: 0.82; }
+.anncard--past .anncard__status .ann-num { color: var(--ink-2); }
+
+/* ---------- 删除按钮：右上角小叉，热区约 32px ---------- */
+.anncard__del {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: 0;
+  transition: background var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+
+.anncard__del:active {
+  background: var(--glass-soft);
+  box-shadow: var(--in);
+  transform: scale(0.92);
+}
+
+.anncard__del::before,
+.anncard__del::after {
+  content: "";
+  position: absolute;
+  width: 11px;
+  height: 1.5px;
+  border-radius: 1px;
+  background: var(--ink-4);
+}
+
+.anncard__del::before { transform: rotate(45deg); }
+.anncard__del::after { transform: rotate(-45deg); }

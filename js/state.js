@@ -85,13 +85,7 @@
     low: { key: "low", label: "低落", value: 24, orb: "low", line: "情绪有点低，想被你问问" }
   };
 
-  var TRACKS = [
-    { title: "灰度呼吸", artist: "LUMEN · Ambient", dur: 214 },
-    { title: "白噪清晨", artist: "LUMEN · Field", dur: 186 },
-    { title: "无人电台", artist: "LUMEN · Lo-fi", dur: 242 },
-    { title: "月面散步", artist: "LUMEN · Piano", dur: 198 },
-    { title: "静默回声", artist: "LUMEN · Drone", dur: 268 }
-  ];
+  /* 音乐播放已下线：TRACKS 与 store.music 一并移除，原「音乐」页面改造为 Zane 的日记本 */
 
   function seed() {
     var now = Date.now();
@@ -100,6 +94,9 @@
       version: 1,
       settings: {
         theme: "light",
+        /* 全局主题皮肤与玻璃外观：与明暗、壁纸一起随主存档存在 localStorage */
+        skin: "mist",
+        glass: "none",
         motion: true,
         proactive: true,
         haptic: true,
@@ -113,25 +110,32 @@
         chatBg: "none",
         chatBgImage: "",
         chatBgDim: 1,
-        /* 桌面小组件自由移动后的排列顺序（与 index.html 默认书写顺序一致） */
+        /* 桌面小组件自由移动后的排列顺序（与 index.html 默认书写顺序一致，只作初始落位） */
         homeOrder: {
-          first: ["companion", "live", "apps", "w-mood", "w-note", "w-today", "w-life", "w-music"],
-          life: ["weather", "water", "steps", "sleep", "focus", "budget", "habits", "plan", "music"]
+          first: ["companion"],
+          life: ["apps", "weather", "water", "steps", "sleep", "focus", "budget", "habits", "plan"]
         },
         /* 应用图标逐个拖动后的顺序（图标网格现在在第二屏） */
-        appOrder: ["chat", "profile", "mood", "schedule", "music", "memory", "settings"],
+        appOrder: ["chat", "profile", "mood", "schedule", "diary", "memory", "anniversary", "settings"],
         /* 自由固定位置：{ 应用 key: { x, y, ox, oy } }，x/y 为网格内容盒内的百分比坐标 */
         appFree: {},
-        /* 第一屏小组件开关：companion 常驻，其余可自由选择添加 */
+        /* 小组件开关：屏幕是空盒子，常驻骨架常开，其余默认收在组件库里由用户自由放置 */
         widgetOn: {
           companion: true,
-          live: true,
           apps: true,
+          live: true,
           "w-mood": false,
           "w-note": false,
           "w-today": false,
           "w-life": false,
-          "w-music": false
+          weather: false,
+          water: false,
+          steps: false,
+          sleep: false,
+          focus: false,
+          budget: false,
+          habits: false,
+          plan: false
         }
       },
       companion: {
@@ -157,6 +161,10 @@
           showActivity: true
         }
       },
+      /* 钱包：余额存在本机存档里，发红包时从这里扣 */
+      wallet: { balance: 1000 },
+      /* 自定义表情包：本机导入的图片 Base64，面板按这个数组渲染 */
+      customStickers: [],
       chat: [
         { id: uid("m"), role: "sys", text: "伴侣系统已就绪", ts: now - 3600000 },
         { id: uid("m"), role: "ai", text: "你来了。我把房间调成了你喜欢的灰度，坐一会儿再忙好吗？", ts: now - 3500000 }
@@ -167,9 +175,8 @@
       ],
       /* TA 的朋友圈：TA 自己发的动态 + 你留在 TA 主页上的话 */
       moments: [
-        /* kind: music 会渲染一行小播放器，kind: scene 会配一张安静的风景小图 */
-        { id: "mo_preset_music", author: "ai", kind: "music", text: "🎵 正在听：《下雨天》", ts: now - 3 * 3600000, tag: "音乐", likes: 6, liked: false },
-        { id: uid("mo"), author: "ai", text: "把清晨六点的光调成了你喜欢的灰度，房间安静得能听见进度条走完。", ts: now - 5 * 3600000, tag: "此刻", likes: 3, liked: false },
+        /* kind: scene 会配一张安静的风景小图（音乐分享小播放器已下线） */
+        { id: uid("mo"), author: "ai", text: "把清晨六点的光调成了你喜欢的颜度，房间安静得能听见时间走完。", ts: now - 5 * 3600000, tag: "此刻", likes: 3, liked: false },
         { id: uid("mo"), author: "me", text: "今天记得喝水，别只盯着屏幕。", ts: now - 20 * 3600000, tag: "你留的话", likes: 1, liked: true },
         { id: "mo_preset_scene", author: "ai", kind: "scene", text: "路边的桂花开了，很香，下次带你一起走这条路。", ts: now - 26 * 3600000, tag: "路过", likes: 4, liked: false },
         { id: uid("mo"), author: "ai", text: "读完第三章，夹了一枚书签在「安静的地方」那一页，下次一起读。", ts: now - 2 * day, tag: "日常", likes: 5, liked: false },
@@ -204,7 +211,8 @@
         streak: 1,
         talkedToday: false
       },
-      music: { index: 0, playing: false, pos: 0 },
+      /* Zane 的日记本：按日期倒序展示，结构 [{ date: 'YYYY-MM-DD', content: '...' }] */
+      diaries: [],
       /* 第二屏 · 生活小组件（本机模拟数据，可在小组件里直接调整） */
       life: {
         city: "灰谷",
@@ -477,6 +485,36 @@
     return out;
   }
 
+  /* ---------- 钱包兼容层 ----------
+     旧存档没有 wallet 字段时回到默认 1000；余额只认非负整数，不设任何上限。 */
+  function normalizeWallet(raw, base) {
+    var src = raw && typeof raw === "object" ? raw : {};
+    var fallback = base && typeof base === "object" ? base.balance : 1000;
+    var n = Number(src.balance);
+    if (!isFinite(n)) n = Number(fallback);
+    if (!isFinite(n)) n = 1000;
+    n = Math.round(n);
+    if (n < 0) n = 0;
+    return { balance: n };
+  }
+
+  /* ---------- 自定义表情包兼容层 ----------
+     store.customStickers 就是一个 Base64 字符串数组，按写入顺序排。
+     旧存档没这个字段时回到空数组（面板里只剩一个「+」号），
+     非字符串、空串和明显不是图片的 data: 一律丢掉，最多留 60 张。 */
+  var MAX_STICKERS = 60;
+
+  function normalizeStickers(raw) {
+    if (!Array.isArray(raw)) return [];
+    var out = [];
+    for (var i = 0; i < raw.length && out.length < MAX_STICKERS; i += 1) {
+      var src = typeof raw[i] === "string" ? raw[i].trim() : "";
+      if (!src || src.indexOf("data:image/") !== 0) continue;
+      out.push(src);
+    }
+    return out;
+  }
+
   /* ---------- 人格档案 / 事实 / 日子 / 存在感兼容层 ---------- */
   var STYLES = {
     brief: "简短直接，一句说完",
@@ -578,6 +616,25 @@
     return out;
   }
 
+  /* 日记本兼容层：只认 YYYY-MM-DD 日期与正文，同一天只留一条，最多留 60 篇 */
+  function normalizeDiaries(raw) {
+    if (!Array.isArray(raw)) return [];
+    var out = [];
+    var seen = {};
+    for (var i = 0; i < raw.length && out.length < 60; i += 1) {
+      var item = raw[i];
+      if (!item || typeof item !== "object") continue;
+      var date = String(item.date || "").trim().slice(0, 10);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
+      var content = String(item.content || "").replace(/\r/g, "").trim().slice(0, 2000);
+      if (!content || seen[date]) continue;
+      seen[date] = 1;
+      out.push({ date: date, content: content });
+    }
+    out.sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; });
+    return out;
+  }
+
   function normalizePresence(raw, base) {
     var src = raw && typeof raw === "object" ? raw : {};
     return {
@@ -596,7 +653,6 @@
      老存档不会重跑 seed，这里只补一次（settings.momentSeed 作记号），
      你自己删掉之后不会又被加回来。 */
   var MOMENT_PRESETS = [
-    { id: "mo_preset_music", kind: "music", text: "🎵 正在听：《下雨天》", tag: "音乐", likes: 6, ago: 3 * 3600000 },
     { id: "mo_preset_scene", kind: "scene", text: "路边的桂花开了，很香，下次带你一起走这条路。", tag: "路过", likes: 4, ago: 26 * 3600000 }
   ];
 
@@ -637,8 +693,8 @@
         id: String(item.id || uid("mo")),
         author: item.author === "me" ? "me" : "ai",
         text: text,
-        /* 动态类型：music / scene 要活过存档，刷新后小播放器和风景图才不会消失 */
-        kind: item.kind === "music" || item.kind === "scene" ? item.kind : "",
+        /* 动态类型：scene 要活过存档，刷新后风景图才不会消失（音乐分享已下线） */
+        kind: item.kind === "scene" ? item.kind : "",
         tag: String(item.tag || "").trim().slice(0, 8),
         ts: typeof item.ts === "number" ? item.ts : Date.now(),
         likes: Math.round(num(item.likes, 0, 0, 9999)),
@@ -660,8 +716,13 @@
       var base = seed();
       store = Object.assign(base, data);
       store.settings = Object.assign(base.settings, data.settings || {});
-      /* 全局主题皮肤已下线：清掉旧存档里的同名字段，壁纸字段保留 */
-      delete store.settings.skin;
+      /* 皮肤与玻璃外观只认合法 id，脏值回到默认，合法值原样保留并继续持久化 */
+      if (typeof store.settings.skin !== "string" || !/^(mist|dusk|moss|clay|plum|amber|ink|rose)$/.test(store.settings.skin)) {
+        store.settings.skin = base.settings.skin;
+      }
+      if (typeof store.settings.glass !== "string" || !/^(none|pink|green|blue|purple|light|dark)$/.test(store.settings.glass)) {
+        store.settings.glass = base.settings.glass;
+      }
       /* 图标顺序与小组件开关：旧存档缺字段时回到默认值 */
       if (!Array.isArray(store.settings.appOrder) || !store.settings.appOrder.length) {
         store.settings.appOrder = base.settings.appOrder.slice();
@@ -672,8 +733,13 @@
       }
       store.settings.widgetOn = Object.assign({}, base.settings.widgetOn, (data.settings || {}).widgetOn || {});
       store.companion = Object.assign(base.companion, data.companion || {});
-      store.music = Object.assign(base.music, data.music || {});
+      store.diaries = normalizeDiaries(data.diaries);
+      /* 音乐播放已下线：旧存档里的 music 字段直接丢弃 */
+      delete store.music;
       store.stats = Object.assign(base.stats, data.stats || {});
+      store.wallet = normalizeWallet(data.wallet, base.wallet);
+      /* 表情包：旧存档缺字段时回到空数组，脏数据在归一化里清掉 */
+      store.customStickers = normalizeStickers(data.customStickers);
       store.life = normalizeLife(data.life, base.life);
       if (!Array.isArray(store.chat) || !store.chat.length) store.chat = base.chat;
       if (!Array.isArray(store.memories) || !store.memories.length) store.memories = base.memories;
@@ -905,6 +971,10 @@
   function normalizeType(type, role) {
     var key = String(type === null || type === undefined ? "" : type).trim().toLowerCase();
     if (key === "notice" || key === "sys") return "notice";
+    /* 图片消息：渲染层按这个 type 直接画图，不套气泡 */
+    if (key === "image") return "image";
+    /* 红包消息：认不出这个 type 就会被改写成 text，渲染层于是退回普通文字气泡 */
+    if (key === "redpacket" || key === "red_packet" || key === "red-packet" || key === "hongbao") return "redpacket";
     if (key === "text") return "text";
     return role === "sys" ? "notice" : "text";
   }
@@ -939,12 +1009,157 @@
     return msg;
   }
 
+  /* 图片消息专用入库：数据结构就是 { type: 'image', content: 图片URL }。
+     text 同步存一份 URL，只读 text 的历史搜索与接口上下文才不会拿到空值。 */
+  function pushImageMsg(role, url) {
+    var src = String(url === null || url === undefined ? "" : url).trim();
+    var safeRole = normalizeRole(role);
+    var msg = {
+      id: uid("m"),
+      role: safeRole,
+      type: "image",
+      content: src,
+      text: src,
+      ts: Date.now()
+    };
+    store.chat.push(msg);
+    if (store.chat.length > 80) store.chat = store.chat.slice(-80);
+    if (safeRole === "me") store.stats.chats += 1;
+    save();
+    return msg;
+  }
+
+  /* ---------- 钱包与红包 ---------- */
+  /* 钱包：余额只保留非负下限，不设任何上限（无 Math.min / clamp 钳制，可无限累加）。 */
+  function wallet() {
+    if (!store.wallet || typeof store.wallet !== "object") store.wallet = { balance: 1000 };
+    /* 余额只保留非负下限，不做上限钳制：有钱就无限累加 */
+    var n = Number(store.wallet.balance);
+    if (!isFinite(n)) n = 1000;
+    if (n < 0) n = 0;
+    store.wallet.balance = n;
+    return store.wallet;
+  }
+
+  /* 钱包金额的统一显示格式：统一 toFixed(2)，金额再大也是两位小数，不会挤坏排版 */
+  function money(value) {
+    var n = Number(value);
+    if (!isFinite(n)) n = 0;
+    return n.toFixed(2);
+  }
+
+  /* 发一个红包：先扣钱包余额，再往聊天记录里插一条特殊消息。
+     数据结构就是需求里那一条：
+     { type: 'redpacket', amount: 66, status: 'claimed', sender: 'user' }。
+     你发给 TA 的红包默认由 TA 直接领走，所以 status 固定是 claimed；
+     text 同步存一份可读文案，只读 text 的历史搜索与接口上下文才不会拿到空值。 */
+  function sendRedPacket(amount) {
+    var value = Number(amount);
+    if (!isFinite(value)) value = 0;
+    value = Math.round(value);
+    var purse = wallet();
+    if (!(value > 0)) return { ok: false, reason: "金额不对" };
+    /* 单次红包金额不设上限；只在余额真不够时拦住，扣款后余额不会为负 */
+    if (value > purse.balance) return { ok: false, reason: "钱包余额不够" };
+    purse.balance = purse.balance - value;
+    var msg = {
+      id: uid("m"),
+      role: "me",
+      type: "redpacket",
+      amount: value,
+      status: "claimed",
+      sender: "user",
+      text: "给你发了一个红包 · " + money(value) + " 金币",
+      ts: Date.now()
+    };
+    store.chat.push(msg);
+    if (store.chat.length > 80) store.chat = store.chat.slice(-80);
+    store.stats.chats += 1;
+    save();
+    return { ok: true, msg: msg, balance: purse.balance };
+  }
+
+  /* TA 主动发来的红包：只入库，不动钱包（TA 的钱不走本机钱包）。
+     数据结构：{ type: 'redpacket', amount: 52, status: 'unclaimed', sender: 'char' }。
+     status 只认 claimed / unclaimed，渲染层认不出 claimed 一律按未领处理；
+     金额保留小数（52.0 就是 52.00），不做上限钳制。 */
+  function pushRedPacketMsg(amount, sender) {
+    var value = Number(amount);
+    if (!isFinite(value) || value <= 0) value = 0;
+    var msg = {
+      id: uid("m"),
+      role: "ai",
+      type: "redpacket",
+      amount: value,
+      status: "unclaimed",
+      sender: sender === "user" ? "user" : "char",
+      text: "给你发了一个红包 · " + money(value) + " 金币",
+      ts: Date.now()
+    };
+    store.chat.push(msg);
+    if (store.chat.length > 80) store.chat = store.chat.slice(-80);
+    save();
+    return msg;
+  }
+
+  /* 拆一个红包：按 id 找到那条 redpacket 消息，金额进钱包、状态改 claimed。
+     只处理还没领的（status 不是 claimed，unclaimed / pending / 旧存档都算未领），
+     重复点击不会重复加钱；脏金额一律归 0，不会把 NaN 加进余额。 */
+  function claimRedPacket(id) {
+    var list = Array.isArray(store.chat) ? store.chat : [];
+    var msg = null;
+    for (var i = 0; i < list.length; i += 1) {
+      if (list[i] && list[i].id === id && list[i].type === "redpacket") {
+        msg = list[i];
+        break;
+      }
+    }
+    if (!msg) return { ok: false, reason: "找不到这个红包" };
+    if (msg.status === "claimed") return { ok: false, claimed: true, reason: "红包已经领过了" };
+    var value = Number(msg.amount);
+    if (!isFinite(value) || value <= 0) value = 0;
+    var purse = wallet();
+    /* 到账金额与余额都不做上限钳制，只要有钱就无限累加 */
+    purse.balance = purse.balance + value;
+    msg.status = "claimed";
+    save();
+    return { ok: true, msg: msg, amount: value, balance: purse.balance };
+  }
+
   function pushNote(title, text) {
     var note = { id: uid("n"), title: title, text: text, ts: Date.now(), read: false };
     store.notes.unshift(note);
     if (store.notes.length > 12) store.notes.length = 12;
     save();
     return note;
+  }
+  function addSticker(dataUrl) {
+    var src = typeof dataUrl === "string" ? dataUrl.trim() : "";
+    if (!src || src.indexOf("data:image/") !== 0) return { ok: false, reason: "图片数据不可用" };
+    var list = stickers();
+    if (list.length >= MAX_STICKERS) return { ok: false, reason: "表情包最多存 " + MAX_STICKERS + " 张" };
+    if (list.indexOf(src) !== -1) return { ok: false, reason: "这张已经加过了" };
+    list.push(src);
+    if (!save()) {
+      list.pop();
+      return { ok: false, reason: "本机存储已满，导入失败" };
+    }
+    return { ok: true, list: list };
+  }
+  /* ---------- 自定义表情包 ----------
+     表情包就是一个 Base64 字符串数组，跟主存档一起持久化；
+     面板渲染、导入、删除全走下面三个函数，UI 层不直接改数组。 */
+  function removeSticker(index) {
+    var list = stickers();
+    var at = Number(index);
+    if (!isFinite(at) || at < 0 || at >= list.length) return { ok: false, reason: "找不到这个表情包" };
+    list.splice(Math.floor(at), 1);
+    if (!save()) return { ok: false, reason: "本机存储写入失败" };
+    return { ok: true, list: list };
+  }
+  function stickers() {
+    if (!Array.isArray(store.customStickers)) store.customStickers = [];
+    return store.customStickers;
   }
 
   function unreadNotes() {
@@ -1144,7 +1359,6 @@
   global.COS = {
     KEY: KEY,
     MOODS: MOODS,
-    TRACKS: TRACKS,
     store: store,
     load: load,
     save: save,
@@ -1169,6 +1383,15 @@
     pushMsg: pushMsg,
     normalizeRole: normalizeRole,
     normalizeType: normalizeType,
+    pushImageMsg: pushImageMsg,
+    wallet: wallet,
+    money: money,
+    sendRedPacket: sendRedPacket,
+    pushRedPacketMsg: pushRedPacketMsg,
+    claimRedPacket: claimRedPacket,
+    stickers: stickers,
+    addSticker: addSticker,
+    removeSticker: removeSticker,
     splitBilingual: splitBilingual,
     extractMemories: extractMemories,
     pushNote: pushNote,

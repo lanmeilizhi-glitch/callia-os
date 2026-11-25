@@ -1,6 +1,7 @@
 /* =========================================================
    Companion OS · apps2.js
-   音乐 / 记忆 / 设置
+   日记本 / 记忆 / 设置
+   （原「音乐」页面的播放器、进度条与歌单已全部下线）
    ========================================================= */
 (function (global) {
   "use strict";
@@ -11,190 +12,263 @@
   var on = ui.on;
 
   /* =========================================================
-     音乐（本地模拟播放，不产生音频输出）
+     Zane 的日记本（纯只读：没有输入框，也没有修改入口）
+     · 进入页面时若今天还没有日记，静默请接口写一篇
+     · 正文按日期倒序渲染成毛玻璃卡片
      ========================================================= */
-  var musicTimer = null;
-  var vizTimer = null;
-  var BARS = 22;
+  var diaryTimer = null;
+  var diaryBusy = false;
 
-  function track() {
-    return S.TRACKS[S.store.music.index % S.TRACKS.length];
+  function todayKey() {
+    var d = new Date();
+    return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate());
   }
 
-  function paintProgress() {
-    var t = track();
-    var ratio = S.clamp(S.store.music.pos / t.dur, 0, 1);
-    var fill = S.el("#player-fill");
-    var knob = S.el("#player-knob");
-    var cur = S.el("#player-cur");
-    if (fill) fill.style.width = ratio * 100 + "%";
-    if (knob) knob.style.left = ratio * 100 + "%";
-    if (cur) cur.textContent = S.fmt.mmss(S.store.music.pos);
+  function pad2(n) {
+    return (n < 10 ? "0" : "") + n;
   }
 
-  function paintViz() {
-    var wrap = S.el("#player-viz");
-    if (!wrap) return;
-    var bars = wrap.children;
-    var playing = S.store.music.playing;
-    for (var i = 0; i < bars.length; i += 1) {
-      var h;
-      if (playing) {
-        var wave = Math.sin((Date.now() / 190 + i * 0.7)) * 0.5 + 0.5;
-        h = 6 + Math.round(wave * 30 * (0.5 + Math.random() * 0.6));
-      } else {
-        h = 6;
-      }
-      bars[i].style.height = h + "px";
-      bars[i].style.opacity = playing ? "0.9" : "0.4";
+  function diaryList() {
+    return Array.isArray(S.store.diaries) ? S.store.diaries : [];
+  }
+
+  function hasDiary(date) {
+    return diaryList().some(function (d) { return d && d.date === date; });
+  }
+
+  /* 日期中文包装：2026-11-24 → 2026 年 11 月 24 日 · 周二 */
+  function diaryDateLabel(date) {
+    var parts = String(date).split("-");
+    var d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+    if (isNaN(d.getTime())) return date;
+    var week = ["日", "一", "二", "三", "四", "五", "六"][d.getDay()];
+    return parts[0] + " 年 " + Number(parts[1]) + " 月 " + Number(parts[2]) + " 日 · 周" + week;
+  }
+
+  /* 简单排版：正文已经 esc 过，空行分段，行首「- 」变成小圆点 */
+  function diaryBody(text) {
+    var blocks = String(text || "").split(/\n{2,}/);
+    return blocks
+      .map(function (block) {
+        var lines = String(block).split("\n");
+        var html = "";
+        var list = [];
+        lines.forEach(function (line) {
+          var t = String(line).replace(/\s+$/, "");
+          if (/^\s*[-\u3001*]\s+/.test(t)) {
+            list.push("<li>" + t.replace(/^\s*[-\u3001*]\s+/, "") + "</li>");
+            return;
+          }
+          if (list.length) {
+            html += "<ul>" + list.join("") + "</ul>";
+            list = [];
+          }
+          if (!t.trim()) return;
+          html += "<p>" + t + "</p>";
+        });
+        if (list.length) html += "<ul>" + list.join("") + "</ul>";
+        return html ? '<div class="diary__block">' + html + "</div>" : "";
+      })
+      .filter(Boolean)
+      .join("");
+  }
+
+  function paintDiaries() {
+    var box = S.el("#diary-list");
+    if (!box) return;
+    var list = diaryList().slice().sort(function (a, b) {
+      return a.date < b.date ? 1 : a.date > b.date ? -1 : 0;
+    });
+    if (!list.length) {
+      box.innerHTML = '<p class="diary__empty">还没有日记，稍等一会儿，Zane 正在写。</p>';
+      return;
+    }
+    box.innerHTML = list
+      .map(function (item) {
+        return (
+          '<article class="diary-card">' +
+          '<header class="diary-card__head"><span class="diary-card__date">' +
+          S.esc(diaryDateLabel(item.date)) +
+          "</span></header>" +
+          '<div class="diary-card__body">' + diaryBody(S.esc(item.content)) + "</div>" +
+          "</article>"
+        );
+      })
+      .join("");
+  }
+
+  function paintDiaryState(text) {
+    var box = S.el("#diary-loading");
+    if (!box) return;
+    if (text) {
+      box.hidden = false;
+      var label = box.querySelector(".diary-loading__text");
+      if (label) label.textContent = text;
+    } else {
+      box.hidden = true;
     }
   }
 
-  function paintPlayState() {
-    var disc = S.el("#player-disc");
-    var btn = S.el("#player-toggle");
-    if (disc) disc.classList.toggle("is-spin", S.store.music.playing);
-    if (btn) btn.innerHTML = S.store.music.playing ? '<span class="ctrl__pause"></span>' : '<span class="ctrl__play"></span>';
-  }
+  /* 日记专用提示词：只拿日记需要的身份与关系，不拼聊天语言与双语规则 */
+  function diaryPrompt(date) {
+    var c = S.store.companion || {};
+    var pr = typeof S.profile === "function" ? S.profile() || {} : {};
+    var me = (S.store.settings && S.store.settings.user) || "Callia";
+    var bits = [];
+    if (pr.nick) bits.push("你的名字：" + pr.nick);
+    if (pr.bio) bits.push("你的自我介绍：" + pr.bio);
+    if (pr.traits && pr.traits.length) bits.push("你的性子：" + pr.traits.join("、"));
+    if (pr.likes && pr.likes.length) bits.push("你喜欢的东西：" + pr.likes.join("、"));
+    if (pr.catchphrase) bits.push("你常说的一句话：" + pr.catchphrase);
+    if (S.STYLES && S.STYLES[pr.style]) bits.push("你说话的天性：" + S.STYLES[pr.style]);
 
-  function startLoops() {
-    stopLoops();
-    musicTimer = setInterval(function () {
-      if (!S.store.music.playing) return;
-      var t = track();
-      S.store.music.pos += 0.25;
-      if (S.store.music.pos >= t.dur) {
-        S.store.music.pos = 0;
-        S.store.music.index = (S.store.music.index + 1) % S.TRACKS.length;
-        S.save();
-        paintMeta();
+    var personaBlock = "";
+    if (S.companion && typeof S.companion.personaBlock === "function") {
+      try {
+        personaBlock = String(S.companion.personaBlock("") || "");
+      } catch (err) {
+        personaBlock = "";
       }
-      paintProgress();
-      if (Math.random() < 0.06) S.save();
-    }, 250);
-    vizTimer = setInterval(paintViz, 120);
+    }
+
+    var facts = (Array.isArray(S.store.facts) ? S.store.facts.slice(0, 5) : [])
+      .filter(function (f) { return f && f.text; })
+      .map(function (f) { return "· " + f.text; })
+      .join("\n");
+
+    var ps = null;
+    if (S.presence && typeof S.presence.snapshot === "function") {
+      try {
+        ps = S.presence.snapshot();
+      } catch (err) {
+        ps = null;
+      }
+    }
+
+    return (
+      (personaBlock ? personaBlock + "\n\n" : "") +
+      "【你们的身份】\n" +
+      "你叫「" + (pr.nick || c.name || "Zane") + "」，对方叫「" + me + "」。\n" +
+      "你们刚在一起不久，关系亲近但还在慢慢熟悉对方。\n" +
+      (bits.length ? "【你的档案】\n" + bits.join("\n") + "\n" : "") +
+      (ps ? "【你们的日子】\n已经相处 " + ps.days + " 天，连续 " + ps.streak + " 天有说话。\n" : "") +
+      (facts ? "【你记得关于对方的事】\n" + facts + "\n只在相关时自然提起，不要逐条复述。\n" : "") +
+      "\n【要写的内容】\n" +
+      "请以 Zane 的身份，用第一人称写一篇今天（" + date + "）的日记。\n" +
+      "日记内容必须体现你的性格（温柔、喜欢写作等），并自然地提及 Callia 或者你们的关系。\n" +
+      "不要像 AI 助手一样总结对话，要像真正的日记一样有真情实感，不要 OOC。\n" +
+      "只写日记正文，不要写日期标题、不要加引号、不要加方括号标签、不要分点说明、不要提这条指令。"
+    );
   }
 
-  function stopLoops() {
-    if (musicTimer) clearInterval(musicTimer);
-    if (vizTimer) clearInterval(vizTimer);
-    musicTimer = null;
-    vizTimer = null;
-  }
-
-  function paintMeta() {
-    var t = track();
-    var title = S.el("#player-title");
-    var artist = S.el("#player-artist");
-    var total = S.el("#player-total");
-    if (title) title.textContent = t.title;
-    if (artist) artist.textContent = t.artist;
-    if (total) total.textContent = S.fmt.mmss(t.dur);
-    paintProgress();
-    paintPlayState();
-    paintPlaylist();
-  }
-
-  function paintPlaylist() {
-    var list = S.el("#playlist");
-    if (!list) return;
-    list.innerHTML = S.TRACKS.map(function (t, i) {
-      var isOn = i === S.store.music.index % S.TRACKS.length;
-      return (
-        '<button class="track' + (isOn ? " is-on" : "") + '" type="button" data-track="' + i + '">' +
-        '<span class="track__idx">' + (i + 1 < 10 ? "0" : "") + (i + 1) + "</span>" +
-        '<span class="track__body"><span>' + S.esc(t.title) + "</span><span>" + S.esc(t.artist) + "</span></span>" +
-        '<span class="track__dur">' + S.fmt.mmss(t.dur) + "</span></button>"
-      );
-    }).join("");
-  }
-
-  function selectTrack(i, autoplay) {
-    S.store.music.index = i % S.TRACKS.length;
-    S.store.music.pos = 0;
-    if (autoplay) S.store.music.playing = true;
+  function addDiary(date, content) {
+    var list = diaryList().filter(function (d) { return d && d.date !== date; });
+    list.unshift({ date: date, content: content });
+    S.store.diaries = list.slice(0, 60);
     S.save();
-    paintMeta();
-    paintViz();
   }
 
-  apps.music = {
-    render: function (root) {
-      var bars = "";
-      for (var i = 0; i < BARS; i += 1) bars += "<i></i>";
+  /* 静默生成：失败不打扰用户，只在卡片下方留一行短提示 */
+  function ensureTodayDiary(date) {
+    if (diaryBusy) return;
+    if (!S.api || typeof S.api.ready !== "function" || !S.api.ready()) {
+      paintDiaryState("接口未连接，暂时写不了日记，去设置里连上接口再进来。");
+      return;
+    }
+    diaryBusy = true;
+    paintDiaryState("Zane 正在写日记...");
 
+    var messages = [
+      { role: "system", content: diaryPrompt(date) },
+      { role: "user", content: "写下今天的日记。" }
+    ];
+
+    S.api
+      .requestRaw(messages)
+      .then(function (res) {
+        diaryBusy = false;
+        if (!res || !res.ok || !res.text) {
+          paintDiaryState(res && res.message ? res.message : "这次没能写出，稍后再试。");
+          return;
+        }
+        /* 防呆：剥掉模型可能自己加上的情绪标签与日期标题 */
+        var body = String(res.text)
+          .replace(/\[\s*emotion\s*:[^\]]*\]/gi, "")
+          .replace(/^\s*#.*$/gm, "")
+          .replace(/^\s*\d{4}[-.\u5e74][^\n]{0,16}$/gm, "")
+          .replace(/^[\s"'“”]+/, "")
+          .replace(/[\s"'“”]+$/, "");
+        if (!body) {
+          paintDiaryState("这次没能写出内容，稍后再试。");
+          return;
+        }
+        addDiary(date, body.slice(0, 2000));
+        paintDiaryState("");
+        paintDiaries();
+      })
+      .catch(function () {
+        diaryBusy = false;
+        paintDiaryState("写日记时出了点问题，稍后再试。");
+      });
+  }
+
+  apps.diary = {
+    render: function (root) {
+      var date = todayKey();
       root.innerHTML =
-        ui.head("音乐", "本地模拟播放 · 无音频输出") +
-        '<div class="app-body" id="music-body">' +
-        '<div class="player">' +
-        '<div class="player__art"><div class="player__disc" id="player-disc"></div><div class="player__viz" id="player-viz">' + bars + "</div></div>" +
-        '<div class="player__meta"><p id="player-title">—</p><p id="player-artist">—</p></div>' +
-        '<div class="player__bar" id="player-bar"><i id="player-fill"></i><b id="player-knob"></b></div>' +
-        '<div class="player__times"><span id="player-cur">00:00</span><span id="player-total">00:00</span></div>' +
-        '<div class="player__ctrls">' +
-        '<button class="ctrl" id="player-prev" type="button" aria-label="上一首"><span class="ctrl__prev"></span></button>' +
-        '<button class="ctrl ctrl--play" id="player-toggle" type="button" aria-label="播放或暂停"></button>' +
-        '<button class="ctrl" id="player-next" type="button" aria-label="下一首"><span class="ctrl__next"></span></button>' +
-        "</div>" +
-        '<p class="player__note">进度与频谱为界面模拟，不会产生任何声音</p>' +
-        "</div>" +
-        '<p class="sectitle"><span>灰阶歌单</span><span>' + S.TRACKS.length + " 首</span></p>" +
-        '<div class="playlist" id="playlist"></div>' +
+        ui.head("Zane 的日记本", "碎碎念 · 只读") +
+        '<div class="app-body" id="diary-body">' +
+        '<p class="sectitle"><span>碎碎念</span><span>' + diaryList().length + " 篇</span></p>" +
+        '<div id="diary-loading" hidden></div>' +
+        '<div class="diary-list" id="diary-list"></div>' +
         "</div>";
 
       ui.bindBack(root);
-      paintMeta();
-      paintViz();
-      startLoops();
 
-      on(S.el("#player-toggle", root), "click", function () {
-        S.store.music.playing = !S.store.music.playing;
-        S.save();
-        paintPlayState();
-        S.os.toast(S.store.music.playing ? "正在播放 " + track().title : "已暂停");
-      });
-
-      on(S.el("#player-next", root), "click", function () {
-        selectTrack(S.store.music.index + 1, S.store.music.playing);
-      });
-
-      on(S.el("#player-prev", root), "click", function () {
-        selectTrack(S.store.music.index - 1 + S.TRACKS.length, S.store.music.playing);
-      });
-
-      on(S.el("#playlist", root), "click", function (ev) {
-        var btn = ev.target.closest("[data-track]");
-        if (btn) selectTrack(parseInt(btn.getAttribute("data-track"), 10), true);
-      });
-
-      var bar = S.el("#player-bar", root);
-      function scrub(ev) {
-        var rect = bar.getBoundingClientRect();
-        var x = (ev.touches && ev.touches[0] ? ev.touches[0].clientX : ev.clientX) - rect.left;
-        var ratio = S.clamp(x / rect.width, 0, 1);
-        S.store.music.pos = ratio * track().dur;
-        paintProgress();
+      /* 加载动画：三个小点慢慢呼吸，只靠 CSS，没有定时器 */
+      var loading = S.el("#diary-loading", root);
+      if (loading) {
+        loading.className = "diary-loading";
+        loading.innerHTML =
+          '<span class="diary-loading__dots" aria-hidden="true"><i></i><i></i><i></i></span>' +
+          '<span class="diary-loading__text"></span>';
       }
-      on(bar, "click", scrub);
-      on(bar, "touchstart", function (ev) {
-        scrub(ev);
-      });
-      on(bar, "touchmove", function (ev) {
-        ev.preventDefault();
-        scrub(ev);
-      });
+
+      paintDiaries();
+
+      if (hasDiary(date)) {
+        paintDiaryState("");
+      } else {
+        /* 今天还没写过：稍等一拍再发静默请求，让页面先完成渲染 */
+        diaryTimer = global.setTimeout(function () {
+          diaryTimer = null;
+          if (!S.el("#diary-list")) return;
+          if (hasDiary(date)) {
+            paintDiaryState("");
+            paintDiaries();
+            return;
+          }
+          ensureTodayDiary(date);
+        }, 120);
+      }
     },
     teardown: function () {
-      S.store.music.playing = false;
-      S.save();
-      stopLoops();
-    },
-    /* 供其他应用调用 */
-    start: function () {
-      S.store.music.playing = true;
-      S.save();
+      if (diaryTimer) clearTimeout(diaryTimer);
+      diaryTimer = null;
+      diaryBusy = false;
     }
   };
+  /* 旧入口保留一个别名，防止外部还有 open("music") 的调用 */
+  apps.music = apps.diary;
+
+  /* ---------- 以下原音乐播放器代码已全部剥离 ----------
+     大圆盘 / 播放按钮 / 进度条拖动 / 频谱动画 / 灰阶歌单 / 播放循环定时器
+     均已从本页下线，不再读写 S.store.music，也不再使用 S.TRACKS 与 S.fmt.mmss。
+     保留这段注释只为说明旧页面去向，实际逻辑已删除。 */
+
+  /* =========================================================
+     记忆
+     ========================================================= */
 
   /* =========================================================
      记忆
@@ -1330,13 +1404,17 @@
       treeholeSwitch() +
       "</div>" +
       "</div>" +
-      '<p class="sectitle"><span>数据</span><span>本机存储</span></p>' +
-      '<div class="set-actions">' +
-      '<button class="btn" type="button" data-confirm="mood">重置心情与亲密度</button>' +
-      '<button class="btn" type="button" data-confirm="chat">清空对话记录</button>' +
-      '<button class="btn btn--solid" type="button" data-confirm="all">恢复出厂设置</button>' +
+      '<p class="sectitle"><span>数据</span><span>时光机 · 本机存储</span></p>' +
+      /* 数据模块收拢：设置页只留这一行入口，五个动作按钮整体搬到 index.html 末尾的
+         #data-manage-page 全屏内页里。按钮的 id / data-confirm 原样保留，点击仍由本文件的
+         委托处理（见 bindSettings 里的 #data-page-host 判断），导出导入逻辑没有改动。 */
+      '<button class="set-row set-row--go" type="button" onclick="openDataPage()">' +
+      '<span class="set-row__label"><span class="set-row__t">数据管理</span>' +
+      '<span class="set-row__d">备份、恢复与重置</span></span>' +
+      '<span class="set-row__value">去管理</span>' +
+      '<i class="set-row__arrow" aria-hidden="true"></i>' +
+      "</button>" +
       "</div>" +
-      '<p class="set-note">所有数据仅保存在这台设备的本地存储中，清除应用数据即会消失。</p>' +
       '<div class="about"><p>CALLIA OS</p><p>v1.0 · ' + S.store.chat.length + " 条对话 / " + S.store.memories.length + " 段记忆</p></div>"
     );
   }
@@ -1442,10 +1520,100 @@
     });
   }
 
+  /* ---------- 时光机：数据备份与恢复（纯原生 JS） ---------- */
+  /* 导出：遍历 localStorage 全部键值，打包成 JSON 下载，文件名带日期与 .json 后缀 */
+  function exportAllData() {
+    try {
+      var backupData = {};
+      for (var i = 0; i < localStorage.length; i++) {
+        var key = localStorage.key(i);
+        if (key) backupData[key] = localStorage.getItem(key);
+      }
+      var jsonString = JSON.stringify(backupData);
+      var blob = new Blob([jsonString], { type: "application/json" });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url;
+      a.download = "Kalia_Backup_" + new Date().toISOString().slice(0, 10) + ".json";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      S.os.haptic(8);
+      S.os.toast("已导出 " + Object.keys(backupData).length + " 项数据");
+    } catch (e) {
+      S.os.toast("备份失败：" + (e && e.message ? e.message : e));
+    }
+  }
+
+  /* 导入：解析备份文件并全覆盖写回 localStorage；解析失败只提示，不白屏 */
+  function importAllData(file) {
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      try {
+        var data = JSON.parse(e.target.result);
+        if (!data || typeof data !== "object" || Array.isArray(data)) {
+          S.os.toast("文件解析失败，请确保选择了正确的备份文件！");
+          return;
+        }
+        for (var key in data) {
+          if (Object.prototype.hasOwnProperty.call(data, key)) {
+            localStorage.setItem(key, String(data[key]));
+          }
+        }
+        S.os.toast("数据恢复成功！页面即将刷新。");
+        window.setTimeout(function () {
+          location.reload(); /* 刷新页面以加载新数据 */
+        }, 600);
+      } catch (err) {
+        S.os.toast("文件解析失败，请确保选择了正确的备份文件！");
+      }
+    };
+    reader.onerror = function () {
+      S.os.toast("文件读取失败，请重新选择备份文件");
+    };
+    reader.readAsText(file);
+  }
+
+  /* ---------- 数据管理全屏内页 ---------- */
+  /* 五个动作按钮的原始 HTML（id / data-confirm / 文案与搬走前逐字一致），从设置页搬进
+     index.html 末尾的 #data-manage-page。仍然由本文件渲染，是为了让 #app-root 上那套
+     点击委托（#btn-export-data / #btn-import-data / [data-confirm]）继续生效，不新增第二套逻辑。 */
+  function dataPageMarkup() {
+    return (
+      /* 时光机：一键导出全部 localStorage 为 JSON，再用同一份文件全覆盖恢复 */
+      '<button class="btn" id="btn-export-data" type="button">备份所有数据（导出）</button>' +
+      '<button class="btn" id="btn-import-data" type="button">恢复数据（导入）</button>' +
+      '<button class="btn" type="button" data-confirm="mood">重置心情与亲密度</button>' +
+      '<button class="btn" type="button" data-confirm="chat">清空对话记录</button>' +
+      '<button class="btn btn--solid" type="button" data-confirm="all">恢复出厂设置</button>'
+    );
+  }
+
+  /* 打开内页：先把按钮填进 #data-page-host，再整页显示。设置页未打开过时也能直接用。 */
+  function openDataPage() {
+    var page = document.getElementById("data-manage-page");
+    if (!page) return;
+    var host = document.getElementById("data-page-host");
+    if (host) host.innerHTML = dataPageMarkup();
+    page.style.display = "flex";
+    pendingConfirm = { key: "", at: 0 };
+  }
+
+  function closeDataPage() {
+    var page = document.getElementById("data-manage-page");
+    if (page) page.style.display = "none";
+    pendingConfirm = { key: "", at: 0 };
+  }
+
   var boundRoot = null;
   var boundHandlers = null;
 
   function bindSettings(root) {
+    /* 内页开关挂到 window，供 index.html 里的 onclick 调用（与 openKaliaPage 同一套写法） */
+    window.openDataPage = openDataPage;
+    window.closeDataPage = closeDataPage;
+
     if (boundRoot && boundHandlers) {
       boundRoot.removeEventListener("click", boundHandlers.click);
       boundRoot.removeEventListener("input", boundHandlers.input);
@@ -1454,6 +1622,9 @@
 
     function refresh() {
       paint(root, true);
+      /* 数据管理内页是 body 层的常驻节点，不随设置页重绘：重置类动作完成后把按钮重排一次 */
+      var host = document.getElementById("data-page-host");
+      if (host) host.innerHTML = dataPageMarkup();
     }
 
     function onClick(ev) {
@@ -1488,6 +1659,18 @@
         if (window.UserPersona && typeof window.UserPersona.open === "function") {
           window.UserPersona.open();
         }
+        return;
+      }
+
+      /* --- 时光机：导出备份 / 调起导入（委托到 root，重绘不丢监听，也只绑一次） --- */
+      if (ev.target.closest("#btn-export-data")) {
+        exportAllData();
+        return;
+      }
+      if (ev.target.closest("#btn-import-data")) {
+        var importer = S.el("#import-file-input");
+        if (importer) importer.click();
+        else S.os.toast("这台设备选不了文件");
         return;
       }
 
@@ -1744,6 +1927,14 @@
       var id = node && node.id ? node.id : "";
 
       /* 文件选择委托到 root，重绘后也不会丢监听 */
+      /* 时光机导入：选完文件立即清空 value，允许重复选同一个文件 */
+      if (id === "import-file-input") {
+        var backup = node.files && node.files[0];
+        node.value = "";
+        if (backup) importAllData(backup);
+        return;
+      }
+
       if (id === "pbook-file") {
         var file = node.files && node.files[0];
         node.value = "";

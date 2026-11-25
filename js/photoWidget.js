@@ -1,16 +1,19 @@
 /* =================================================================
    Callia OS · photoWidget.js
-   桌面图片卡片：独立添加 / 删除 / 爱心 / localStorage 持久化
-   每张图片是一个单独的卡片，不包裹在相册网格里。
+   相册小组件：桌面独立照片卡片
+   · 只读写本机 localStorage 的 photoWidgets 数组
+   · 图片一律先经 canvas 压缩（宽上限 300px + JPEG 0.6）再落盘
+   · 不参与主存档，也不碰伴侣卡片与其他小组件的渲染
    ================================================================= */
 (function (global) {
   "use strict";
 
-  var STORAGE_KEY = "callia_photo_cards";
-  var MAX_PHOTOS = 12;
-  var MAX_SIZE = 200 * 1024;
-  var MAX_EDGE = 600;
+  var STORAGE_KEY = "photoWidgets";
+  var MAX_PHOTOS = 9;
+  var MAX_EDGE = 300;
+  var JPEG_Q = 0.6;
 
+  /* ---------- 工具 ---------- */
   function el(sel, root) {
     return (root || document).querySelector(sel);
   }
@@ -42,6 +45,7 @@
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   }
 
+  /* ---------- 数据读写 ---------- */
   function load() {
     try {
       var raw = global.localStorage.getItem(STORAGE_KEY);
@@ -61,6 +65,7 @@
     }
   }
 
+  /* ---------- 图片压缩 ---------- */
   function compress(file, cb) {
     if (typeof FileReader === "undefined") { cb(null); return; }
     var reader = new FileReader();
@@ -80,17 +85,7 @@
           canvas.height = h;
           var ctx = canvas.getContext("2d");
           ctx.drawImage(img, 0, 0, w, h);
-          var data = canvas.toDataURL("image/jpeg", 0.7);
-          if (data.length > MAX_SIZE) {
-            data = canvas.toDataURL("image/jpeg", 0.4);
-          }
-          if (data.length > MAX_SIZE) {
-            canvas.width = Math.round(w / 2);
-            canvas.height = Math.round(h / 2);
-            ctx = canvas.getContext("2d");
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            data = canvas.toDataURL("image/jpeg", 0.4);
-          }
+          var data = canvas.toDataURL("image/jpeg", JPEG_Q);
           cb(data);
         } catch (err) {
           cb(null);
@@ -103,46 +98,88 @@
     reader.readAsDataURL(file);
   }
 
-  function render() {
-    var container = el("#photo-cards");
-    if (!container) return;
-    var list = load();
-    var html = "";
-
-    for (var i = 0; i < list.length; i++) {
-      var item = list[i];
-      var liked = item.liked ? " is-liked" : "";
-      html +=
-        '<div class="photo-card" data-photo-id="' + item.id + '">' +
-          '<img class="photo-card__img" src="' + item.src + '" alt="' + (item.title || "照片") + '" loading="lazy">' +
-          '<button class="photo-card__del" type="button" data-photo-del="' + item.id + '" aria-label="删除这张图片">✕</button>' +
-          '<div class="photo-card__bar">' +
-            '<span class="photo-card__title">' + (item.title || "") + '</span>' +
-            '<button class="photo-card__heart' + liked + '" type="button" data-photo-heart="' + item.id + '" aria-label="喜欢">' +
-              (item.liked ? "♥" : "♡") +
-            '</button>' +
-          '</div>' +
-        '</div>';
-    }
-
-    if (list.length < MAX_PHOTOS) {
-      html +=
-        '<div class="photo-card photo-card--add" id="photo-add" role="button" tabindex="0" aria-label="添加图片">' +
-          '<span class="photo-card__plus">+</span>' +
-          '<span class="photo-card__hint">添加图片</span>' +
-        '</div>';
-    }
-
-    container.innerHTML = html;
+  /* ---------- 找宿主容器 ---------- */
+  function findHost() {
+    /* 优先找第二屏 bento 后面 */
+    var bento = el("#bento-life");
+    if (bento && bento.parentNode) return { parent: bento.parentNode, after: bento };
+    /* 兜底：第二屏 home__scroll */
+    var page = el('#home .home__page--life .home__scroll');
+    return page ? { parent: page, after: null } : null;
   }
 
+  /* ---------- 渲染 ---------- */
+  function render() {
+    var widget = el("#widget-photo");
+    var list = load();
+    var host = findHost();
+
+    /* 没有宿主就不渲染 */
+    if (!host) return;
+
+    /* 首次：创建容器 */
+    if (!widget) {
+      widget = document.createElement("section");
+      widget.id = "widget-photo";
+      widget.className = "card wgt wgt--photo";
+      widget.setAttribute("data-widget", "photo");
+      if (host.after) {
+        host.after.parentNode.insertBefore(widget, host.after.nextSibling);
+      } else {
+        host.parent.appendChild(widget);
+      }
+    }
+
+    var countText = list.length ? list.length + " 张" : "空";
+    var gridClass = "pw-grid" + (list.length === 0 ? " is-empty" : "");
+    var html =
+      '<div class="pw__head">' +
+        '<span class="pw__label">相册</span>' +
+        '<span class="pw__tag">' + countText + '</span>' +
+      '</div>' +
+      '<div class="' + gridClass + '">';
+
+    if (list.length === 0) {
+      html +=
+        '<button class="pw-add pw-add--block" type="button" data-pw-add aria-label="添加照片">' +
+          '<i class="pw-add__plus">+</i>' +
+          '<span class="pw-add__text">添加照片</span>' +
+        '</button>';
+    } else {
+      for (var i = 0; i < list.length; i++) {
+        var item = list[i];
+        html +=
+          '<div class="pw-card" data-pw-id="' + item.id + '">' +
+            '<img class="pw-card__img" src="' + item.src + '" alt="照片" loading="lazy">' +
+            '<button class="pw-card__rm" type="button" data-pw-rm="' + item.id + '" aria-label="删除">✕</button>' +
+          '</div>';
+      }
+      /* 没满就显示添加按钮 */
+      if (list.length < MAX_PHOTOS) {
+        html +=
+          '<button class="pw-add" type="button" data-pw-add aria-label="添加照片">' +
+            '<i class="pw-add__plus">+</i>' +
+            '<span class="pw-add__text">添加照片</span>' +
+          '</button>';
+      }
+    }
+
+    html += '</div>';
+
+    /* 移除按钮（排列模式）*/
+    html += '<button class="wgt__rm" type="button" data-wgt-rm="photo" aria-label="从桌面移除相册小组件">✕</button>';
+
+    widget.innerHTML = html;
+  }
+
+  /* ---------- 添加图片 ---------- */
   function addPhoto() {
     var list = load();
     if (list.length >= MAX_PHOTOS) {
-      toast("最多放 " + MAX_PHOTOS + " 张图片");
+      toast("最多放 " + MAX_PHOTOS + " 张照片");
       return;
     }
-    var input = el("#photo-file-input");
+    var input = el("#photo-widget-file");
     if (!input) return;
     input.value = "";
     input.click();
@@ -153,27 +190,22 @@
       toast("请选择一张图片");
       return;
     }
-    toast("正在处理图片…");
+    toast("正在处理…");
     compress(file, function (data) {
       if (!data) {
         toast("图片读取失败，换一张试试");
         return;
       }
       var list = load();
-      list.push({
-        id: uid(),
-        src: data,
-        title: "",
-        liked: false,
-        ts: Date.now()
-      });
+      list.push({ id: uid(), src: data, ts: Date.now() });
       save(list);
       render();
       buzz(12);
-      toast("图片已添加");
+      toast("照片已添加");
     });
   }
 
+  /* ---------- 删除 ---------- */
   function deletePhoto(id) {
     var list = load().filter(function (item) { return item.id !== id; });
     save(list);
@@ -182,43 +214,9 @@
     toast("已删除");
   }
 
-  function toggleHeart(id) {
-    var list = load();
-    for (var i = 0; i < list.length; i++) {
-      if (list[i].id === id) {
-        list[i].liked = !list[i].liked;
-        break;
-      }
-    }
-    save(list);
-    render();
-    buzz(8);
-  }
-
-  function editTitle(id) {
-    var list = load();
-    var item = null;
-    for (var i = 0; i < list.length; i++) {
-      if (list[i].id === id) { item = list[i]; break; }
-    }
-    if (!item) return;
-    var title = global.prompt("给这张图片起个名字", item.title || "");
-    if (title === null) return;
-    item.title = title.slice(0, 20);
-    save(list);
-    render();
-  }
-
-  var holdTimer = null;
-  function clearHold() {
-    if (holdTimer !== null) {
-      clearTimeout(holdTimer);
-      holdTimer = null;
-    }
-  }
-
+  /* ---------- 事件 ---------- */
   function bind() {
-    var fileInput = el("#photo-file-input");
+    var fileInput = el("#photo-widget-file");
     if (fileInput) {
       fileInput.addEventListener("change", function () {
         if (fileInput.files && fileInput.files[0]) {
@@ -231,60 +229,25 @@
       var node = ev.target;
       if (!node || typeof node.closest !== "function") return;
 
-      if (node.closest("#photo-add")) {
+      /* 添加 */
+      if (node.closest("[data-pw-add]")) {
         ev.preventDefault();
         addPhoto();
         return;
       }
 
-      var del = node.closest("[data-photo-del]");
-      if (del) {
+      /* 删除 */
+      var rm = node.closest("[data-pw-rm]");
+      if (rm) {
         ev.preventDefault();
         ev.stopPropagation();
-        deletePhoto(del.getAttribute("data-photo-del"));
-        return;
-      }
-
-      var heart = node.closest("[data-photo-heart]");
-      if (heart) {
-        ev.preventDefault();
-        ev.stopPropagation();
-        toggleHeart(heart.getAttribute("data-photo-heart"));
-        return;
-      }
-
-      var title = node.closest(".photo-card__title");
-      if (title) {
-        var card = title.closest(".photo-card");
-        if (card && card.getAttribute("data-photo-id")) {
-          ev.preventDefault();
-          editTitle(card.getAttribute("data-photo-id"));
-        }
+        deletePhoto(rm.getAttribute("data-pw-rm"));
         return;
       }
     });
-
-    document.addEventListener("touchstart", function (ev) {
-      var node = ev.target;
-      if (!node || typeof node.closest !== "function") return;
-      var card = node.closest(".photo-card[data-photo-id]");
-      if (!card) return;
-      clearHold();
-      holdTimer = setTimeout(function () {
-        holdTimer = null;
-        card.classList.add("show-del");
-        buzz(14);
-        setTimeout(function () {
-          card.classList.remove("show-del");
-        }, 3000);
-      }, 500);
-    }, { passive: true });
-
-    document.addEventListener("touchend", clearHold, { passive: true });
-    document.addEventListener("touchcancel", clearHold, { passive: true });
-    document.addEventListener("touchmove", clearHold, { passive: true });
   }
 
+  /* ---------- 启动 ---------- */
   function boot() {
     render();
     bind();
