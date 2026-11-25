@@ -773,10 +773,7 @@ body[data-motion="off"] .bento * {
 
 /* ============================================================
    图片卡片小组件 · tile--photo
-   独立卡片，每张图一个 tile，参考 p2 右下角样式
    ============================================================ */
-
-/* 图片卡片容器：独立于 bento 网格，自己排自己的 */
 .photo-cards {
   display: flex;
   flex-wrap: wrap;
@@ -786,7 +783,6 @@ body[data-motion="off"] .bento * {
   align-items: start;
 }
 
-/* 单张图片卡片 */
 .photo-card {
   position: relative;
   width: calc(50% - 6px);
@@ -801,11 +797,8 @@ body[data-motion="off"] .bento * {
   -webkit-tap-highlight-color: transparent;
 }
 
-.photo-card:active {
-  transform: scale(0.976);
-}
+.photo-card:active { transform: scale(0.976); }
 
-/* 图片区域 */
 .photo-card__img {
   display: block;
   width: 100%;
@@ -815,7 +808,6 @@ body[data-motion="off"] .bento * {
   pointer-events: none;
 }
 
-/* 底栏：标题 + 爱心 */
 .photo-card__bar {
   display: flex;
   align-items: center;
@@ -837,7 +829,6 @@ body[data-motion="off"] .bento * {
   text-overflow: ellipsis;
 }
 
-/* 爱心按钮 */
 .photo-card__heart {
   flex: 0 0 auto;
   width: 26px;
@@ -860,7 +851,6 @@ body[data-motion="off"] .bento * {
   background: rgba(231, 76, 94, 0.1);
 }
 
-/* 删除按钮：右上角，默认隐藏，长按或编辑模式时出现 */
 .photo-card__del {
   position: absolute;
   top: 7px;
@@ -889,7 +879,6 @@ body[data-editing="1"] .photo-card__del {
   pointer-events: auto;
 }
 
-/* 添加图片按钮：虚线框 */
 .photo-card--add {
   display: flex;
   flex-direction: column;
@@ -903,9 +892,7 @@ body[data-editing="1"] .photo-card__del {
   transition: transform 0.24s cubic-bezier(0.22, 0.61, 0.36, 1), border-color 0.2s ease;
 }
 
-.photo-card--add:active {
-  transform: scale(0.96);
-}
+.photo-card--add:active { transform: scale(0.96); }
 
 .photo-card--add .photo-card__plus {
   font-size: 22px;
@@ -920,7 +907,6 @@ body[data-editing="1"] .photo-card__del {
   color: var(--b-faint, rgba(22, 24, 27, 0.36));
 }
 
-/* 暗色主题适配 */
 [data-theme="dark"] .photo-card {
   background: rgba(48, 50, 55, 0.86);
   border-color: rgba(255, 255, 255, 0.09);
@@ -936,7 +922,6 @@ body[data-editing="1"] .photo-card__del {
   background: rgba(0, 0, 0, 0.6);
 }
 
-/* 窄屏：卡片稍小一点 */
 @media (max-width: 340px) {
   .photo-card__bar { padding: 6px 8px; }
   .photo-card__title { font-size: 10px; }

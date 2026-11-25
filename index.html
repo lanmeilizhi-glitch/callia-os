@@ -18,8 +18,6 @@
   <link rel="stylesheet" href="css/charhome.css">
   <link rel="stylesheet" href="css/chatbg.css">
   <link rel="stylesheet" href="css/bubble.css">
-  <link rel="stylesheet" href="css/bubble-theme.css">
-  <link rel="stylesheet" href="css/user-persona.css">
   <!-- 隐藏互动「灵魂共鸣」特效层（摇一摇 / 双击聊天页顶部） -->
   <link rel="stylesheet" href="css/resonance.css">
   <!-- 亲密度里程碑「心跳同步」庆祝特效（光晕 / 红心 / 流光 / 祝贺台词） -->
@@ -291,7 +289,7 @@
      <input id="cbg-file" type="file" accept="image/*" hidden>
      <!-- 图片卡片小组件的文件选择框 -->
      <input id="photo-file-input" type="file" accept="image/*" hidden>
-     <!-- 伴侣档案头像上传：档案页白球/黑钮调起它，读取与存本机见 js/profileApp.js。
+     <!-- 伴侣档案头像上传 -->：档案页白球/黑钮调起它，读取与存本机见 js/profileApp.js。
 		     放在这里而不是档案页内部，是因为档案页每次重绘都会重建 DOM，常驻节点不会被一起销毁。 -->
      <input type="file" id="avatar-upload" accept="image/*" style="display: none;"> <!-- 聊天页「你」的头像上传：点聊天页右侧那个圆形头像调起它，
 		     读取与存本机见 js/apps.js。同样常驻 body：聊天页每次重绘都会
@@ -537,7 +535,6 @@
   <script src="js/apps.js"></script>
   <script src="js/apps2.js"></script>
   <script src="js/bubbleStyle.js"></script>
-  <script src="js/bubbleTheme.js"></script>
   <!-- 我的档案（User Persona）：只读写本机 localStorage，不碰任何接口 -->
   <script src="js/userPersona.js"></script>
   <script src="js/profileApp.js"></script>

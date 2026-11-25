@@ -8,12 +8,9 @@
 
   var STORAGE_KEY = "callia_photo_cards";
   var MAX_PHOTOS = 12;
-  /* 压缩后单张最大尺寸（字节），防止 localStorage 爆满 */
   var MAX_SIZE = 200 * 1024;
-  /* 压缩输出最大边长 */
   var MAX_EDGE = 600;
 
-  /* ---------- 工具 ---------- */
   function el(sel, root) {
     return (root || document).querySelector(sel);
   }
@@ -45,7 +42,6 @@
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   }
 
-  /* ---------- 数据读写 ---------- */
   function load() {
     try {
       var raw = global.localStorage.getItem(STORAGE_KEY);
@@ -65,7 +61,6 @@
     }
   }
 
-  /* ---------- 图片压缩 ---------- */
   function compress(file, cb) {
     if (typeof FileReader === "undefined") { cb(null); return; }
     var reader = new FileReader();
@@ -85,13 +80,11 @@
           canvas.height = h;
           var ctx = canvas.getContext("2d");
           ctx.drawImage(img, 0, 0, w, h);
-          /* 先试 0.7 质量，如果超限就降到 0.4 */
           var data = canvas.toDataURL("image/jpeg", 0.7);
           if (data.length > MAX_SIZE) {
             data = canvas.toDataURL("image/jpeg", 0.4);
           }
           if (data.length > MAX_SIZE) {
-            /* 还是太大就再缩一半 */
             canvas.width = Math.round(w / 2);
             canvas.height = Math.round(h / 2);
             ctx = canvas.getContext("2d");
@@ -110,7 +103,6 @@
     reader.readAsDataURL(file);
   }
 
-  /* ---------- 渲染 ---------- */
   function render() {
     var container = el("#photo-cards");
     if (!container) return;
@@ -133,7 +125,6 @@
         '</div>';
     }
 
-    /* 添加按钮：没满就显示 */
     if (list.length < MAX_PHOTOS) {
       html +=
         '<div class="photo-card photo-card--add" id="photo-add" role="button" tabindex="0" aria-label="添加图片">' +
@@ -145,7 +136,6 @@
     container.innerHTML = html;
   }
 
-  /* ---------- 添加图片 ---------- */
   function addPhoto() {
     var list = load();
     if (list.length >= MAX_PHOTOS) {
@@ -184,7 +174,6 @@
     });
   }
 
-  /* ---------- 删除 ---------- */
   function deletePhoto(id) {
     var list = load().filter(function (item) { return item.id !== id; });
     save(list);
@@ -193,7 +182,6 @@
     toast("已删除");
   }
 
-  /* ---------- 爱心 ---------- */
   function toggleHeart(id) {
     var list = load();
     for (var i = 0; i < list.length; i++) {
@@ -207,7 +195,6 @@
     buzz(8);
   }
 
-  /* ---------- 编辑标题 ---------- */
   function editTitle(id) {
     var list = load();
     var item = null;
@@ -215,7 +202,6 @@
       if (list[i].id === id) { item = list[i]; break; }
     }
     if (!item) return;
-    /* 用简单的 prompt，对小手机来说最不占空间 */
     var title = global.prompt("给这张图片起个名字", item.title || "");
     if (title === null) return;
     item.title = title.slice(0, 20);
@@ -223,7 +209,6 @@
     render();
   }
 
-  /* ---------- 长按显示删除 ---------- */
   var holdTimer = null;
   function clearHold() {
     if (holdTimer !== null) {
@@ -232,7 +217,6 @@
     }
   }
 
-  /* ---------- 事件绑定 ---------- */
   function bind() {
     var fileInput = el("#photo-file-input");
     if (fileInput) {
@@ -247,14 +231,12 @@
       var node = ev.target;
       if (!node || typeof node.closest !== "function") return;
 
-      /* 添加按钮 */
       if (node.closest("#photo-add")) {
         ev.preventDefault();
         addPhoto();
         return;
       }
 
-      /* 删除 */
       var del = node.closest("[data-photo-del]");
       if (del) {
         ev.preventDefault();
@@ -263,7 +245,6 @@
         return;
       }
 
-      /* 爱心 */
       var heart = node.closest("[data-photo-heart]");
       if (heart) {
         ev.preventDefault();
@@ -272,7 +253,6 @@
         return;
       }
 
-      /* 点击标题区域编辑标题 */
       var title = node.closest(".photo-card__title");
       if (title) {
         var card = title.closest(".photo-card");
@@ -284,7 +264,6 @@
       }
     });
 
-    /* 长按图片卡片显示删除按钮（移动端没有 hover） */
     document.addEventListener("touchstart", function (ev) {
       var node = ev.target;
       if (!node || typeof node.closest !== "function") return;
@@ -295,7 +274,6 @@
         holdTimer = null;
         card.classList.add("show-del");
         buzz(14);
-        /* 3 秒后自动隐藏 */
         setTimeout(function () {
           card.classList.remove("show-del");
         }, 3000);
@@ -307,7 +285,6 @@
     document.addEventListener("touchmove", clearHold, { passive: true });
   }
 
-  /* ---------- 启动 ---------- */
   function boot() {
     render();
     bind();
@@ -319,7 +296,6 @@
     boot();
   }
 
-  /* 导出给外部使用 */
   global.CalliaPhoto = {
     render: render,
     add: addPhoto
