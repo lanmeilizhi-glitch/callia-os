@@ -1,0 +1,660 @@
+/* =====================================================================
+   Callia OS · home-pages.css
+   桌面小折叠入口、就地组件库面板、屏幕管理行与可增减的主屏页面
+   ===================================================================== */
+
+/* ---------- 小折叠入口：比原来的胶囊入口更小，chevron 表示可展开 ---------- */
+.fold__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex: 0 0 auto;
+  min-width: 0;
+  min-height: 30px;
+  margin: 10px 0 2px;
+  padding: 0 11px 0 9px;
+  border: 1px solid rgba(122, 122, 132, 0.34);
+  border-radius: 999px;
+  background: rgba(122, 122, 132, 0.16);
+  color: var(--b-ink, #1c1c20);
+  font-size: 11.5px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+}
+
+.fold__btn--page {
+  border-style: dashed;
+  background: rgba(122, 122, 132, 0.1);
+  color: var(--b-muted, #6f6f78);
+}
+
+.fold__btn:active {
+  transform: scale(0.96);
+  background: rgba(122, 122, 132, 0.26);
+}
+
+.fold__btn:focus-visible {
+  outline: 2px solid rgba(122, 122, 132, 0.9);
+  outline-offset: 2px;
+}
+
+.fold__btn[aria-expanded="true"] {
+  border-color: rgba(122, 122, 132, 0.62);
+  background: rgba(122, 122, 132, 0.24);
+}
+
+/* 折叠箭头：默认朝下，展开后翻上去 */
+.fold__chev {
+  width: 9px;
+  height: 9px;
+  flex: 0 0 auto;
+  border-right: 1.6px solid currentColor;
+  border-bottom: 1.6px solid currentColor;
+  border-radius: 1px;
+  transform: translateY(-2px) rotate(45deg);
+  opacity: 0.78;
+  transition: transform 0.22s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.fold__btn[aria-expanded="true"] .fold__chev {
+  transform: translateY(1px) rotate(-135deg);
+}
+
+/* ---------- 就地小折叠面板 ---------- */
+.fold__panel {
+  flex: 0 0 auto;
+  max-height: 0;
+  margin-top: 0;
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+  transition: max-height 0.28s cubic-bezier(0.22, 0.61, 0.36, 1),
+    opacity 0.2s ease, margin-top 0.28s ease, visibility 0s linear 0.28s;
+}
+
+.fold__panel.is-open {
+  max-height: min(58vh, 430px);
+  margin-top: 8px;
+  opacity: 1;
+  visibility: visible;
+  transition: max-height 0.3s cubic-bezier(0.22, 0.61, 0.36, 1),
+    opacity 0.22s ease, margin-top 0.3s ease, visibility 0s;
+}
+
+.fold__inner {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 11px 12px 12px;
+  border: 1px solid rgba(122, 122, 132, 0.24);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.62);
+  -webkit-backdrop-filter: blur(14px) saturate(1.15);
+  backdrop-filter: blur(14px) saturate(1.15);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.1);
+}
+
+.fold__meta {
+  margin: 0;
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: var(--b-muted, #6f6f78);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.fold__list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 32vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-right: 2px;
+}
+
+.fold__row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 9px;
+  border-radius: 12px;
+  background: rgba(122, 122, 132, 0.1);
+}
+
+.fold__row-main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.fold__name {
+  display: block;
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.3;
+  color: var(--b-ink, #1c1c20);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.fold__desc {
+  display: block;
+  margin: 1px 0 0;
+  font-size: 10.5px;
+  line-height: 1.35;
+  color: var(--b-muted, #6f6f78);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.fold__chip {
+  flex: 0 0 auto;
+  min-width: 58px;
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid rgba(122, 122, 132, 0.42);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--b-ink, #1c1c20);
+  font-size: 11.5px;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.16s ease, color 0.16s ease, transform 0.16s ease;
+}
+
+.fold__chip.is-on {
+  border-color: transparent;
+  background: rgba(28, 28, 34, 0.86);
+  color: #f4f4f6;
+}
+
+.fold__chip.is-move {
+  border-style: dashed;
+}
+
+.fold__chip:active {
+  transform: scale(0.96);
+}
+
+.fold__chip:focus-visible {
+  outline: 2px solid rgba(122, 122, 132, 0.9);
+  outline-offset: 2px;
+}
+
+.fold__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  padding-top: 2px;
+}
+
+.fold__link {
+  min-height: 30px;
+  padding: 0 2px;
+  border: none;
+  background: transparent;
+  color: var(--b-ink, #1c1c20);
+  font-size: 11.5px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.16s ease;
+}
+
+.fold__link--ghost {
+  color: var(--b-muted, #6f6f78);
+  text-decoration: none;
+}
+
+.fold__link:active {
+  opacity: 0.6;
+}
+
+.fold__link[disabled] {
+  opacity: 0.42;
+}
+
+.fold__link:focus-visible {
+  outline: 2px solid rgba(122, 122, 132, 0.9);
+  outline-offset: 2px;
+}
+
+.fold__empty {
+  margin: 0;
+  padding: 6px 2px 2px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--b-muted, #6f6f78);
+}
+
+/* ---------- 屏幕管理行 ---------- */
+.pagebar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 30vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.pagebar__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 7px 5px 5px;
+  border-radius: 12px;
+  background: rgba(122, 122, 132, 0.1);
+}
+
+.pagebar__idx {
+  flex: 0 0 auto;
+  width: 20px;
+  font-size: 11px;
+  text-align: center;
+  color: var(--b-muted, #6f6f78);
+}
+
+.pagebar__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 30px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.55);
+  color: var(--b-ink, #1c1c20);
+  font-size: 12px;
+  font-family: inherit;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.pagebar__name:focus {
+  outline: none;
+  border-color: rgba(122, 122, 132, 0.7);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.pagebar__btn {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid rgba(122, 122, 132, 0.34);
+  border-radius: 9px;
+  background: transparent;
+  color: var(--b-ink, #1c1c20);
+  font-size: 12px;
+  line-height: 1;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.16s ease, transform 0.16s ease, opacity 0.16s ease;
+}
+
+.pagebar__btn:active:not([disabled]) {
+  transform: scale(0.94);
+  background: rgba(122, 122, 132, 0.22);
+}
+
+.pagebar__btn[disabled] {
+  opacity: 0.32;
+}
+
+.pagebar__btn:focus-visible {
+  outline: 2px solid rgba(122, 122, 132, 0.9);
+  outline-offset: 2px;
+}
+
+.pagebar__btn--del {
+  border-color: rgba(178, 92, 92, 0.42);
+  color: #a24a4a;
+}
+
+.pagebar__btn--del.is-warn {
+  width: auto;
+  min-width: 54px;
+  padding: 0 8px;
+  border-color: transparent;
+  background: rgba(178, 92, 92, 0.9);
+  color: #fdf6f6;
+  font-size: 11px;
+}
+
+/* ---------- 自定义主屏 ---------- */
+.page__head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 2px 2px 10px;
+}
+
+.page__kicker {
+  margin: 0;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: var(--b-muted, #6f6f78);
+}
+
+.page__title {
+  margin: 0;
+  font-size: 19px;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+  color: var(--b-ink, #1c1c20);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.page__widgets {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
+}
+
+.page__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 0;
+  padding: 30px 16px;
+  border: 1px dashed rgba(122, 122, 132, 0.46);
+  border-radius: 18px;
+  background: rgba(122, 122, 132, 0.07);
+  color: var(--b-muted, #6f6f78);
+  font-size: 12px;
+  line-height: 1.55;
+  text-align: center;
+}
+
+.page__empty[hidden] {
+  display: none;
+}
+
+.page__empty-btn {
+  min-height: 32px;
+  margin-top: 6px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(28, 28, 34, 0.86);
+  color: #f4f4f6;
+  font-size: 12px;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.16s ease, background 0.16s ease;
+}
+
+.page__empty-btn:active {
+  transform: scale(0.96);
+}
+
+/* ---------- 分页条上的新增屏幕按钮 ---------- */
+.pager__add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  margin-left: 2px;
+  padding: 0;
+  border: 1px solid rgba(122, 122, 132, 0.5);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  color: var(--b-ink, #1c1c20);
+  font-size: 13px;
+  line-height: 1;
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.18s ease, background 0.18s ease, opacity 0.18s ease;
+}
+
+.pager__add:active {
+  transform: scale(0.9);
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.pager__add:focus-visible {
+  outline: 2px solid rgba(122, 122, 132, 0.9);
+  outline-offset: 2px;
+}
+
+.pager__add[disabled] {
+  opacity: 0.34;
+}
+
+/* ---------- 排列模式：折叠与工具行一起让位 ---------- */
+body[data-editing="1"] .fold__panel {
+  display: none;
+}
+
+/* =====================================================================
+   网格内拖拽排序：第二屏 App 网格
+   1) 所有图标永远留在 .appgrid 的 3 列网格正常流里，不写 position:absolute，
+      也不写 left/top，所以不可能飞出网格或盖住别的内容；
+   2) 拖起时只叠加 transform 位移（由 homeLayout.js 写入），松手后位移归零，
+      图标自然吸附回格位；
+   3) 拖动中挂 .is-dragging，只做视觉抬升（放大 + 阴影 + 描边），
+      位移与缩放分开写在 transform 里，不会互相覆盖。
+   ===================================================================== */
+.appgrid {
+  position: relative;
+  touch-action: pan-y;
+}
+
+/* 网格里的图标始终是正常流里的格子，不写 position/left/top，
+   所以任何情况下都不会脱离网格、不会叠在别的内容上 */
+.appgrid__item {
+  position: relative;
+  touch-action: pan-y;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* 拖动中：抬起来（放大 + 阴影 + 描边），盖住其它图标，不再跟手滚动页面。
+   位移与缩放都由 homeLayout.js 写进 transform，这里不写 transform，避免互相覆盖 */
+.appgrid__item.is-dragging {
+  z-index: 90;
+  touch-action: none;
+  cursor: grabbing;
+  opacity: 0.98;
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.26), 0 3px 8px rgba(0, 0, 0, 0.14);
+  outline: 1.5px solid rgba(140, 140, 152, 0.72);
+  outline-offset: 2px;
+  transition: box-shadow 0.18s ease, outline-color 0.18s ease;
+}
+
+/* 松手回位：只过渡 transform，位移归零后自然吸附回格位 */
+.appgrid__item.is-settling {
+  transition: transform 0.2s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* 被换到新格位的图标：轻微高亮一下，提示排序已生效 */
+.appgrid__item.is-swapped {
+  animation: gridSwap 0.32s ease;
+}
+
+@keyframes gridSwap {
+  0% { box-shadow: 0 0 0 0 rgba(140, 140, 152, 0.5); }
+  100% { box-shadow: 0 0 0 10px rgba(140, 140, 152, 0); }
+}
+
+/* 排列模式：可拖的图标给一点提示，但不改变布局 */
+body[data-editing="1"] .appgrid__item {
+  animation: none;
+  outline: 1px dashed rgba(140, 140, 152, 0.5);
+  outline-offset: 2px;
+}
+
+/* 第二屏顶部提示：轻扫切换 + 长按拖动排序 */
+.home__page--life .home__hint {
+  margin: 2px 0 0;
+  padding-bottom: 0;
+}
+
+/* 第二屏的 App 网格与下方 Bento 之间留出呼吸，避免贴在一起 */
+.home__page--life .appgrid {
+  margin-bottom: 4px;
+}
+
+/* 拖拽进行中：轮播让出手势，整页禁止选中，避免拖图标时误切屏 */
+body.is-dragging .home__carousel {
+  touch-action: none;
+}
+
+body.is-dragging {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* 拖动中的图标要能盖住相邻格位，不被滚动容器的 overflow 裁掉 */
+.home__page--life .home__scroll {
+  position: relative;
+}
+
+/* 网格容器本身不裁剪，抬起的图标阴影可以溢出到相邻格位 */
+.home__page--life .appgrid {
+  overflow: visible;
+}
+
+/* ---------- 深色 ---------- */
+html[data-theme="dark"] .fold__btn {
+  border-color: rgba(226, 226, 234, 0.3);
+  background: rgba(226, 226, 234, 0.14);
+  color: #ececf1;
+}
+
+html[data-theme="dark"] .fold__btn--page {
+  background: rgba(226, 226, 234, 0.08);
+  color: rgba(236, 236, 241, 0.72);
+}
+
+html[data-theme="dark"] .fold__btn[aria-expanded="true"] {
+  border-color: rgba(226, 226, 234, 0.52);
+  background: rgba(226, 226, 234, 0.2);
+}
+
+html[data-theme="dark"] .fold__inner {
+  border-color: rgba(226, 226, 234, 0.18);
+  background: rgba(28, 28, 32, 0.7);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.4);
+}
+
+html[data-theme="dark"] .fold__row,
+html[data-theme="dark"] .pagebar__row {
+  background: rgba(226, 226, 234, 0.08);
+}
+
+html[data-theme="dark"] .fold__chip {
+  border-color: rgba(226, 226, 234, 0.34);
+  color: #ececf1;
+}
+
+html[data-theme="dark"] .fold__chip.is-on {
+  background: rgba(240, 240, 244, 0.9);
+  color: #1b1b1e;
+}
+
+html[data-theme="dark"] .pagebar__name {
+  border-color: transparent;
+  background: rgba(226, 226, 234, 0.1);
+  color: #ececf1;
+}
+
+html[data-theme="dark"] .pagebar__name:focus {
+  border-color: rgba(226, 226, 234, 0.5);
+  background: rgba(226, 226, 234, 0.16);
+}
+
+html[data-theme="dark"] .pagebar__btn {
+  border-color: rgba(226, 226, 234, 0.28);
+  color: #ececf1;
+}
+
+html[data-theme="dark"] .pagebar__btn--del {
+  border-color: rgba(226, 138, 138, 0.44);
+  color: #e5a3a3;
+}
+
+html[data-theme="dark"] .pagebar__btn--del.is-warn {
+  background: rgba(190, 96, 96, 0.92);
+  color: #fff5f5;
+}
+
+html[data-theme="dark"] .page__empty {
+  border-color: rgba(226, 226, 234, 0.28);
+  background: rgba(226, 226, 234, 0.06);
+  color: rgba(226, 226, 234, 0.72);
+}
+
+html[data-theme="dark"] .page__empty-btn {
+  background: rgba(240, 240, 244, 0.9);
+  color: #1b1b1e;
+}
+
+html[data-theme="dark"] .pager__add {
+  border-color: rgba(226, 226, 234, 0.42);
+  background: rgba(226, 226, 234, 0.12);
+  color: #ececf1;
+}
+
+/* ---------- 窄屏 ---------- */
+@media (max-width: 360px) {
+  .fold__btn {
+    padding: 0 9px 0 8px;
+    font-size: 11px;
+  }
+
+  .fold__inner {
+    padding: 10px 10px 11px;
+  }
+
+  .fold__chip {
+    min-width: 54px;
+    padding: 0 8px;
+    font-size: 11px;
+  }
+
+  .fold__list {
+    max-height: 28vh;
+  }
+
+  .pagebar__btn {
+    width: 28px;
+    height: 28px;
+  }
+
+  .page__title {
+    font-size: 17px;
+  }
+}
+
+/* ---------- 动效降级 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .fold__panel,
+  .fold__btn,
+  .fold__chev,
+  .fold__chip,
+  .pagebar__btn,
+  .page__empty-btn,
+  .pager__add,
+  .appgrid__item.is-settling {
+    transition: none;
+  }
+
+  .appgrid__item.is-swapped {
+    animation: none;
+  }
+}

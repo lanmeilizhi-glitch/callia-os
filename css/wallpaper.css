@@ -1,0 +1,465 @@
+/* =====================================================================
+   Callia OS · wallpaper.css
+   桌面壁纸层：内置预设 + 本机图片，共用同一层铺法
+   · theme.js 在 <html> 上写 data-bg / data-bg-kind / data-bg-dim 与 --wp-img
+   · 只有 data-bg="image" 时壁纸才生效；没选壁纸时界面与原来完全一致
+   · 壁纸铺在 .screen 这块屏幕表面上，桌面 / 锁屏 / 启动共用
+   · 本文件在 base/apps/widgets/profile 之后加载，只加壁纸层与壁纸面板，
+     不改动任何文字颜色令牌，两种明暗模式下都可读
+   ===================================================================== */
+
+html {
+  --wp-img: none;
+  /* 遮罩色必须有兜底值：var() 解析失败会让整条 background-image 一起失效，
+     那时只剩 background-color，桌面看起来就像壁纸完全没生效。 */
+  --wp-veil-1: rgba(247, 247, 245, 0.34);
+  --wp-veil-2: rgba(247, 247, 245, 0.58);
+}
+
+/* ---------- 遮罩浓度：浅色白纱 / 深色黑纱 ---------- */
+html[data-bg="image"][data-theme="light"] {
+  --wp-veil-1: rgba(247, 247, 245, 0.34);
+  --wp-veil-2: rgba(247, 247, 245, 0.58);
+}
+html[data-bg="image"][data-theme="light"][data-bg-dim="0"] {
+  --wp-veil-1: rgba(247, 247, 245, 0.1);
+  --wp-veil-2: rgba(247, 247, 245, 0.26);
+}
+html[data-bg="image"][data-theme="light"][data-bg-dim="2"] {
+  --wp-veil-1: rgba(247, 247, 245, 0.6);
+  --wp-veil-2: rgba(247, 247, 245, 0.8);
+}
+
+html[data-bg="image"][data-theme="dark"] {
+  --wp-veil-1: rgba(16, 17, 20, 0.5);
+  --wp-veil-2: rgba(16, 17, 20, 0.72);
+}
+html[data-bg="image"][data-theme="dark"][data-bg-dim="0"] {
+  --wp-veil-1: rgba(16, 17, 20, 0.28);
+  --wp-veil-2: rgba(16, 17, 20, 0.5);
+}
+html[data-bg="image"][data-theme="dark"][data-bg-dim="2"] {
+  --wp-veil-1: rgba(16, 17, 20, 0.72);
+  --wp-veil-2: rgba(16, 17, 20, 0.88);
+}
+
+/* 内置预设自带深浅变体，遮罩更透，保留壁纸本身的颜色 */
+html[data-bg="image"][data-bg-kind="preset"][data-theme="light"] {
+  --wp-veil-1: rgba(247, 247, 245, 0.1);
+  --wp-veil-2: rgba(247, 247, 245, 0.3);
+}
+html[data-bg="image"][data-bg-kind="preset"][data-theme="light"][data-bg-dim="0"] {
+  --wp-veil-1: rgba(247, 247, 245, 0.02);
+  --wp-veil-2: rgba(247, 247, 245, 0.14);
+}
+html[data-bg="image"][data-bg-kind="preset"][data-theme="light"][data-bg-dim="2"] {
+  --wp-veil-1: rgba(247, 247, 245, 0.42);
+  --wp-veil-2: rgba(247, 247, 245, 0.62);
+}
+
+html[data-bg="image"][data-bg-kind="preset"][data-theme="dark"] {
+  --wp-veil-1: rgba(16, 17, 20, 0.22);
+  --wp-veil-2: rgba(16, 17, 20, 0.46);
+}
+html[data-bg="image"][data-bg-kind="preset"][data-theme="dark"][data-bg-dim="0"] {
+  --wp-veil-1: rgba(16, 17, 20, 0.08);
+  --wp-veil-2: rgba(16, 17, 20, 0.26);
+}
+html[data-bg="image"][data-bg-kind="preset"][data-theme="dark"][data-bg-dim="2"] {
+  --wp-veil-1: rgba(16, 17, 20, 0.55);
+  --wp-veil-2: rgba(16, 17, 20, 0.76);
+}
+
+/* ---------- 壁纸铺在「屏幕」这块表面上 ----------
+   壁纸不写在 .screen 自己的 background 上，而是写在屏幕的 ::before 层：
+   那是一层独立元素，不参与 .screen background 的优先级竞争，
+   别处再怎么给 .screen 铺底色（甚至 !important）都盖不住它。 */
+html[data-bg="image"] #screen.screen {
+  background-color: #e9e9e7;
+  /* 自建层叠上下文，z-index:-1 的壁纸层才会落在「屏幕底色之上、内容之下」 */
+  isolation: isolate;
+}
+
+html[data-bg="image"][data-theme="dark"] #screen.screen {
+  background-color: #191a1d;
+}
+
+html[data-bg="image"] #screen.screen::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: inherit;
+  /* 显式复位装饰属性：即使别处也定义了 .screen::before，壁纸层表现也一致 */
+  opacity: 1;
+  transform: none;
+  filter: none;
+  -webkit-filter: none;
+  mix-blend-mode: normal;
+  box-shadow: none;
+  background-color: transparent;
+  background-image:
+    linear-gradient(180deg, var(--wp-veil-1, rgba(247, 247, 245, 0.34)) 0%, var(--wp-veil-2, rgba(247, 247, 245, 0.58)) 100%),
+    var(--wp-img, none);
+  background-position: center center, center center;
+  background-size: cover, cover;
+  background-repeat: no-repeat, no-repeat;
+}
+
+/* 手机外壳之外的桌面层只铺同一层遮罩色，不重复铺图：
+   .device 是 100% 宽 + 100dvh 高，#screen 始终盖满它，
+   再铺一层只会让手机把同一张 dataURL 多解码一次。 */
+html[data-bg="image"] .stage {
+  background-color: #e9e9e7;
+  background-image: linear-gradient(
+    180deg,
+    var(--wp-veil-1, rgba(247, 247, 245, 0.34)) 0%,
+    var(--wp-veil-2, rgba(247, 247, 245, 0.58)) 100%
+  );
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+html[data-bg="image"][data-theme="dark"] .stage {
+  background-color: #191a1d;
+}
+
+/* 桌面 / 锁屏 / 启动这几层必须透明，否则壁纸会被夹在中间的背景挡住 */
+html[data-bg="image"] .home,
+html[data-bg="image"] #home.home,
+html[data-bg="image"] .home__carousel,
+html[data-bg="image"] #home-carousel.home__carousel,
+html[data-bg="image"] .home__track,
+html[data-bg="image"] #home-track.home__track,
+html[data-bg="image"] .home__page,
+html[data-bg="image"] #home .home__page,
+html[data-bg="image"] .home__scroll,
+html[data-bg="image"] #home .home__scroll,
+html[data-bg="image"] .lock,
+html[data-bg="image"] #lock.lock,
+html[data-bg="image"] .boot,
+html[data-bg="image"] #boot.boot {
+  /* 这几层只是容器，壁纸激活时必须透明，否则会把壁纸夹在中间 */
+  background: transparent !important;
+}
+
+/* 长按桌面换壁纸时不弹系统文字菜单，也不选中文字 */
+#home.home {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+#screen.screen {
+  position: relative;
+}
+
+/* ---------- 壁纸面板外壳 ---------- */
+.wp-sheet {
+  --wp-accent: #1b1c1f;
+  --wp-accent-ink: #fbfbf9;
+  position: absolute;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  align-items: flex-end;
+}
+
+.wp-sheet[hidden] {
+  display: none;
+}
+
+[data-theme="dark"] .wp-sheet {
+  --wp-accent: #f1f1ee;
+  --wp-accent-ink: #1b1c1f;
+}
+
+.wp-sheet__mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(16, 17, 20, 0.44);
+  opacity: 0;
+  transition: opacity 0.26s ease;
+}
+
+.wp-sheet.is-on .wp-sheet__mask {
+  opacity: 1;
+}
+
+.wp-sheet__panel {
+  position: relative;
+  width: 100%;
+  max-height: 88%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 10px 16px calc(14px + env(safe-area-inset-bottom));
+  border-radius: 26px 26px 0 0;
+  background: rgba(250, 250, 248, 0.95);
+  color: #1b1c1f;
+  box-shadow:
+    0 -14px 44px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  -webkit-backdrop-filter: blur(22px) saturate(140%);
+  backdrop-filter: blur(22px) saturate(140%);
+  transform: translateY(102%);
+  transition: transform 0.34s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+[data-theme="dark"] .wp-sheet__panel {
+  background: rgba(26, 27, 31, 0.95);
+  color: #ececeb;
+  box-shadow:
+    0 -14px 44px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.wp-sheet.is-on .wp-sheet__panel {
+  transform: translateY(0);
+}
+
+.wp-sheet__handle {
+  flex: 0 0 auto;
+  width: 38px;
+  height: 4px;
+  margin: 0 auto 11px;
+  border-radius: 99px;
+  background: currentColor;
+  opacity: 0.22;
+}
+
+.wp-sheet__head {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.wp-sheet__title {
+  min-width: 0;
+}
+
+.wp-sheet__title p {
+  margin: 0;
+}
+
+.wp-sheet__title p:first-child {
+  font-size: 15.5px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.wp-sheet__title p:last-child {
+  margin-top: 3px;
+  font-size: 11.5px;
+  line-height: 1.3;
+  opacity: 0.56;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wp-sheet__scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.wp-sheet__note {
+  margin: 12px 0 0;
+  font-size: 11px;
+  line-height: 1.5;
+  opacity: 0.5;
+}
+
+.wp-sheet__foot {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.wp-sheet__foot .btn {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* ---------- 壁纸缩略图网格 ---------- */
+.wp-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 9px;
+  margin-top: 13px;
+}
+
+.wp-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  margin: 0;
+  padding: 0 0 1px;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: center;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+}
+
+.wp-tile__fill {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 76px;
+  border-radius: 14px;
+  background-color: rgba(140, 145, 152, 0.16);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.08),
+    inset 0 -14px 22px rgba(0, 0, 0, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.12);
+  transition: transform 0.2s cubic-bezier(0.22, 0.61, 0.36, 1), box-shadow 0.2s ease;
+}
+
+.wp-tile:active .wp-tile__fill {
+  transform: scale(0.94);
+}
+
+.wp-tile:focus-visible {
+  outline: 2px solid var(--wp-accent);
+  outline-offset: 3px;
+  border-radius: 14px;
+}
+
+.wp-tile__fill.is-empty::after {
+  content: "＋";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  line-height: 1;
+  opacity: 0.42;
+}
+
+.wp-tile__name {
+  display: block;
+  font-size: 10.5px;
+  line-height: 1.25;
+  letter-spacing: 0.02em;
+  opacity: 0.62;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wp-tile.is-on .wp-tile__fill {
+  box-shadow:
+    inset 0 0 0 2px var(--wp-accent),
+    0 3px 12px rgba(0, 0, 0, 0.2);
+}
+
+.wp-tile.is-on .wp-tile__name {
+  opacity: 1;
+  font-weight: 600;
+}
+
+.wp-tile__dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--wp-accent-ink);
+  box-shadow: 0 0 0 1.5px var(--wp-accent);
+  opacity: 0;
+  transform: scale(0.4);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.wp-tile.is-on .wp-tile__dot {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ---------- 遮罩浓度分段 ---------- */
+.wp-veil {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.wp-veil.is-off {
+  display: none;
+}
+
+.wp-veil__label {
+  flex: 0 0 auto;
+  font-size: 11.5px;
+  line-height: 1;
+  opacity: 0.58;
+}
+
+.wp-veil__seg {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.wp-veil__seg .seg__btn {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 7px 4px;
+  font-size: 11.5px;
+}
+
+@media (max-width: 380px) {
+  .wp-sheet__panel {
+    padding-left: 13px;
+    padding-right: 13px;
+  }
+
+  .wp-grid {
+    gap: 8px;
+  }
+
+  .wp-tile__fill {
+    height: 66px;
+    border-radius: 12px;
+  }
+
+  .wp-tile__name {
+    font-size: 10px;
+  }
+
+  .wp-veil__seg .seg__btn {
+    padding: 7px 3px;
+    font-size: 11px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wp-sheet__mask,
+  .wp-sheet__panel,
+  .wp-tile__fill,
+  .wp-tile__dot {
+    transition: none;
+  }
+}
+
+body[data-motion="off"] .wp-sheet__panel,
+body[data-motion="off"] .wp-sheet__mask,
+body[data-motion="off"] .wp-tile__fill,
+body[data-motion="off"] .wp-tile__dot {
+  transition: none;
+}

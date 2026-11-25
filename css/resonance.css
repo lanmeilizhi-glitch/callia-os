@@ -1,0 +1,213 @@
+/* =====================================================================
+   Callia OS · resonance.css
+   隐藏互动「灵魂共鸣」特效层（js/resonance.js 触发时才挂载）
+   · 绝对定位铺满 #screen，pointer-events:none，绝不拦截聊天页点击
+   · 深色玻璃卡片自带对比度，浅色 / 深色主题下都读得清
+   ===================================================================== */
+
+.resonance {
+  position: absolute;
+  inset: 0;
+  z-index: 96;
+  display: grid;
+  place-items: center;
+  /* 顶部让开状态栏，底部让开 Dock 与 home 条，卡片永远落在视觉中心 */
+  padding:
+    calc(env(safe-area-inset-top, 0px) + 24px)
+    18px
+    calc(env(safe-area-inset-bottom, 0px) + 92px);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.26s ease, visibility 0s linear 0.26s;
+}
+
+.resonance.is-on {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.22s ease, visibility 0s linear;
+}
+
+/* 柔光氛围：只在中心偏上晕开，不糊掉整屏 */
+.resonance__veil {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(120% 62% at 50% 44%, rgba(255, 138, 158, 0.20), rgba(255, 138, 158, 0) 62%),
+    radial-gradient(110% 54% at 50% 100%, rgba(18, 14, 26, 0.26), rgba(18, 14, 26, 0) 70%);
+  -webkit-backdrop-filter: blur(1.5px);
+  backdrop-filter: blur(1.5px);
+}
+
+/* 主体卡片 */
+.resonance__core {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  min-width: 186px;
+  max-width: min(320px, 100%);
+  padding: 24px 28px 20px;
+  border-radius: 26px;
+  background: rgba(17, 18, 24, 0.74);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow:
+    0 20px 52px rgba(0, 0, 0, 0.36),
+    inset 0 1px 0 rgba(255, 255, 255, 0.10);
+  -webkit-backdrop-filter: blur(12px) saturate(130%);
+  backdrop-filter: blur(12px) saturate(130%);
+  color: #fff;
+  text-align: center;
+  transform: translateY(10px) scale(0.94);
+  opacity: 0;
+  transition: transform 0.34s cubic-bezier(0.22, 1.02, 0.34, 1), opacity 0.24s ease;
+}
+
+.resonance.is-on .resonance__core {
+  transform: none;
+  opacity: 1;
+}
+
+/* 心跳 + 涟漪共用一个中心 */
+.resonance__beat {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 78px;
+  height: 78px;
+  margin-bottom: 2px;
+}
+
+.resonance__ring {
+  position: absolute;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 150, 170, 0.55);
+  opacity: 0;
+}
+
+.resonance.is-on .resonance__ring {
+  animation: res-ripple 1.4s ease-out 2 both;
+}
+
+.resonance.is-on .resonance__ring + .resonance__ring {
+  animation-delay: 0.36s;
+}
+
+@keyframes res-ripple {
+  0% {
+    transform: scale(0.5);
+    opacity: 0.8;
+  }
+  70% {
+    opacity: 0.16;
+  }
+  100% {
+    transform: scale(2.05);
+    opacity: 0;
+  }
+}
+
+/* 纯 CSS 心形：两瓣绕底部中心各转 45° */
+.resonance__heart {
+  position: relative;
+  width: 34px;
+  height: 30px;
+  filter: drop-shadow(0 6px 16px rgba(255, 93, 125, 0.45));
+  transform: scale(0.9);
+}
+
+.resonance.is-on .resonance__heart {
+  animation: res-beat 1.05s ease-in-out infinite;
+}
+
+.resonance__heart i {
+  position: absolute;
+  top: 0;
+  width: 17px;
+  height: 27px;
+  border-radius: 17px 17px 0 0;
+  background: linear-gradient(180deg, #ffa3b6, #ff5d7d);
+}
+
+.resonance__heart i:first-child {
+  left: 0;
+  transform: rotate(-45deg);
+  transform-origin: 100% 100%;
+}
+
+.resonance__heart i:last-child {
+  right: 0;
+  transform: rotate(45deg);
+  transform-origin: 0 100%;
+}
+
+@keyframes res-beat {
+  0%,
+  100% {
+    transform: scale(0.9);
+  }
+  16% {
+    transform: scale(1.14);
+  }
+  30% {
+    transform: scale(0.97);
+  }
+  44% {
+    transform: scale(1.08);
+  }
+  62% {
+    transform: scale(0.95);
+  }
+}
+
+.resonance__text {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.96);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.42);
+}
+
+.resonance.is-on .resonance__text {
+  animation: res-glow 1.05s ease-in-out infinite;
+}
+
+@keyframes res-glow {
+  0%,
+  100% {
+    opacity: 0.82;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.resonance__sub {
+  margin: 0;
+  font-size: 11.5px;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+/* 系统要求减少动效时只保留一次淡入淡出，不做循环心跳 */
+@media (prefers-reduced-motion: reduce) {
+  .resonance,
+  .resonance__core,
+  .resonance__heart,
+  .resonance__ring,
+  .resonance__text {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .resonance__heart {
+    transform: scale(1);
+  }
+
+  .resonance__ring {
+    opacity: 0.35;
+  }
+}

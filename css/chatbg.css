@@ -1,0 +1,307 @@
+/* ============================================================================
+   Callia OS · chatbg.css
+   对话页聊天背景：背景层只画在消息区 #chat-log 上，头部与输入条保持原样。
+   · 背景本体由 <html> 上的 --chat-bg-img / --chat-bg-base 驱动（chatBg.js 写入）
+   · data-chat-bg = none | preset | image，data-chat-bg-key 记录具体预设
+   · 个人主页「聊天背景」分栏的预设网格、图片行与遮罩控件也在这里
+   ========================================================================== */
+
+/* ---------- 背景层 ---------- */
+#chat-log.app-body {
+  background-color: var(--chat-bg-base, transparent);
+  background-image: var(--chat-bg-img, none);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+}
+
+/* 有背景时给半透明气泡补一点底，保证长句仍然可读 */
+html[data-chat-bg="preset"] .msg--ai .msg__bubble,
+html[data-chat-bg="image"] .msg--ai .msg__bubble {
+  background: rgba(255, 255, 255, 0.9);
+  -webkit-backdrop-filter: saturate(120%) blur(14px);
+  backdrop-filter: saturate(120%) blur(14px);
+}
+
+html[data-theme="dark"][data-chat-bg="preset"] .msg--ai .msg__bubble,
+html[data-theme="dark"][data-chat-bg="image"] .msg--ai .msg__bubble {
+  background: rgba(38, 40, 45, 0.9);
+}
+
+/* 时间分隔与接口提示改成小胶囊，压在图片上也能看清 */
+html[data-chat-bg="preset"] .chat__day,
+html[data-chat-bg="image"] .chat__day {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(22, 24, 27, 0.07);
+  color: rgba(22, 24, 27, 0.62);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+html[data-theme="dark"][data-chat-bg="preset"] .chat__day,
+html[data-theme="dark"][data-chat-bg="image"] .chat__day {
+  background: rgba(243, 244, 246, 0.1);
+  color: rgba(243, 244, 246, 0.68);
+}
+
+/* ---------- 个人主页 · 聊天背景分栏 ---------- */
+.ch-bg {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ch-bg > * {
+  flex: 0 0 auto;
+}
+
+.cbg-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.cbg-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 0 0 8px;
+  border: 0;
+  border-radius: 16px;
+  background: transparent;
+  font: inherit;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.16s var(--ease, ease);
+}
+
+.cbg-tile__fill {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  min-height: 74px;
+  border-radius: 14px;
+  background-color: var(--ch-inset);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  box-shadow: inset 0 0 0 1px var(--ch-hair), var(--ch-shadow);
+  overflow: hidden;
+}
+
+/* 没选过本机图片时给一个虚线占位 */
+.cbg-tile__fill.is-empty::before {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border: 1px dashed var(--ch-track);
+  border-radius: 10px;
+}
+
+.cbg-tile__fill.is-empty::after {
+  content: "+";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--ch-faint);
+  font-size: 19px;
+  line-height: 1;
+}
+
+.cbg-tile__name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  color: var(--ch-muted);
+}
+
+.cbg-tile__dot {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--ch-solid);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.28), inset 0 0 0 3px var(--ch-glass);
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 0.16s var(--ease, ease), transform 0.16s var(--ease, ease);
+}
+
+.cbg-tile.is-on .cbg-tile__dot {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.cbg-tile.is-on .cbg-tile__fill {
+  box-shadow: inset 0 0 0 2px var(--ch-solid), var(--ch-shadow);
+}
+
+.cbg-tile.is-on .cbg-tile__name {
+  color: var(--ch-ink);
+  font-weight: 600;
+}
+
+.cbg-tile:active {
+  transform: scale(0.97);
+}
+
+.cbg-tile:focus-visible {
+  outline: 2px solid rgba(22, 24, 27, 0.5);
+  outline-offset: 3px;
+}
+
+[data-theme="dark"] .cbg-tile:focus-visible {
+  outline-color: rgba(243, 244, 246, 0.6);
+}
+
+/* 本机图片行 */
+.cbg-photo {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px;
+  border-radius: 18px;
+  background: var(--ch-glass);
+  -webkit-backdrop-filter: var(--ch-blur);
+  backdrop-filter: var(--ch-blur);
+  box-shadow: var(--ch-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.cbg-photo__prev {
+  position: relative;
+  flex: 0 0 auto;
+  display: block;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background-color: var(--ch-inset);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  box-shadow: inset 0 0 0 1px var(--ch-hair);
+}
+
+.cbg-photo__prev.is-empty::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1.4px var(--ch-track);
+}
+
+.cbg-photo__side {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.cbg-photo__name {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ch-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cbg-photo__meta {
+  margin: -3px 0 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--ch-faint);
+}
+
+.cbg-photo__acts {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* 遮罩浓度：没图时整行收起 */
+.cbg-veil {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cbg-veil.is-off {
+  display: none;
+}
+
+.cbg-veil__label {
+  font-size: 11.5px;
+  letter-spacing: 0.1em;
+  color: var(--ch-faint);
+}
+
+.cbg-veil__chips {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.cbg-veil .ch-chip {
+  min-height: 32px;
+  padding: 0 12px;
+  font-size: 12px;
+}
+
+/* ---------- 窄屏 ---------- */
+@media (max-width: 380px) {
+  .cbg-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .cbg-tile__fill {
+    min-height: 68px;
+  }
+
+  .cbg-tile__name {
+    font-size: 11px;
+  }
+
+  .cbg-photo {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .cbg-photo__prev {
+    width: 46px;
+    height: 46px;
+  }
+}
+
+/* ---------- 减少动效 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .cbg-tile,
+  .cbg-tile__dot {
+    transition: none;
+  }
+}
+
+body[data-motion="off"] .cbg-tile,
+body[data-motion="off"] .cbg-tile__dot {
+  transition: none;
+}

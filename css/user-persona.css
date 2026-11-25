@@ -1,0 +1,305 @@
+/* ===================================================================
+   Callia OS · user-persona.css
+   「我的档案 (User Persona)」：设置页 → 设定 分组里写死的三个输入框 + 保存按钮
+   · 标记由 js/apps2.js 的 renderSettingsBody() 输出，没有弹窗、没有内联样式
+   · 容器复用设置页的 .set-row 排版，输入框与按钮沿用同一套圆角、字号与呼吸
+   · 暗色主题只做同色系降级，不出现白底黑字断层
+   =================================================================== */
+
+/* 容器：借用设置页 set-row 的左右呼吸与分隔线，内容改成纵向排列 */
+.set-row.up-inline {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  padding-top: 14px;
+  padding-bottom: 14px;
+}
+
+.set-row.up-inline > .set-row__label {
+  width: 100%;
+  margin: 0 0 2px;
+}
+
+/* 输入框：与相邻设置项同一套底色与圆角，长内容自己滚动，不撑破分组 */
+.up-input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 46px;
+  max-height: 180px;
+  padding: 11px 12px;
+  overflow-y: auto;
+  font: inherit;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: #1c1c1e;
+  background: #f6f6f3;
+  border: 1px solid rgba(28, 28, 30, 0.08);
+  border-radius: 14px;
+  outline: none;
+  resize: none;
+  /* 中文长句正常折行，长英文与链接也不会撑破设置项 */
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  -webkit-appearance: none;
+  appearance: none;
+  transition: background 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.up-input::placeholder {
+  color: #b0b0b4;
+}
+
+.up-input:focus {
+  background: #fff;
+  border-color: rgba(28, 28, 30, 0.45);
+  box-shadow: 0 0 0 3px rgba(28, 28, 30, 0.07);
+}
+
+/* 保存按钮：整行宽，触控高度不低于 46px */
+.up-save-btn {
+  width: 100%;
+  min-height: 46px;
+  margin: 2px 0 0;
+}
+
+.up-note {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: #a0a0a4;
+}
+
+/* 暗色主题：跟随深色玻璃，不出现白底黑字断层 */
+[data-theme="dark"] .up-input {
+  color: #f0f0f2;
+  background: #26262a;
+  border-color: rgba(255, 255, 255, 0.09);
+}
+
+[data-theme="dark"] .up-input::placeholder {
+  color: #6e6e75;
+}
+
+[data-theme="dark"] .up-input:focus {
+  background: #2c2c31;
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .up-note {
+  color: #85858c;
+}
+
+/* 窄屏：呼吸略收紧，框与按钮始终不横向溢出 */
+@media (max-width: 360px) {
+  .set-row.up-inline {
+    gap: 9px;
+  }
+
+  .up-input {
+    padding: 10px 11px;
+    border-radius: 12px;
+  }
+}
+
+/* 减弱动效时不做过渡 */
+@media (prefers-reduced-motion: reduce) {
+  .up-input {
+    transition: none;
+  }
+}
+
+/* ---------- 标题行 ---------- */
+#user-persona-sheet .up-sheet__head {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+}
+
+#user-persona-sheet .up-sheet__title {
+  min-width: 0;
+}
+
+#user-persona-sheet .up-sheet__title p {
+  margin: 0;
+}
+
+#user-persona-sheet .up-sheet__title p:first-child {
+  font-size: 18px;
+  font-weight: 650;
+  letter-spacing: 0.2px;
+  color: #1c1c1e;
+}
+
+#user-persona-sheet .up-status {
+  margin-top: 5px !important;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: #8a8a8e;
+}
+
+/* ---------- 字段滚动区：只有这里滚动，标题与按钮始终可见 ---------- */
+#user-persona-sheet .up-sheet__scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  gap: 14px;
+  padding-right: 2px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+#user-persona-sheet .up-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+#user-persona-sheet .up-field__label {
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #1c1c1e;
+}
+
+#user-persona-sheet .up-field__hint {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: #9a9a9e;
+}
+
+#user-persona-sheet .up-field__input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 46px;
+  max-height: 200px;
+  padding: 11px 12px;
+  overflow-y: auto;
+  font: inherit;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: #1c1c1e;
+  background: #f6f6f3;
+  border: 1px solid rgba(28, 28, 30, 0.07);
+  border-radius: 14px;
+  outline: none;
+  resize: none;
+  /* 中文长句正常折行，长英文与链接也不会撑破面板 */
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  -webkit-appearance: none;
+  appearance: none;
+  transition: background 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+#user-persona-sheet .up-field__input::placeholder {
+  color: #b0b0b4;
+}
+
+#user-persona-sheet .up-field__input:focus {
+  background: #fff;
+  border-color: rgba(28, 28, 30, 0.5);
+  box-shadow: 0 0 0 3px rgba(28, 28, 30, 0.07);
+}
+
+/* ---------- 底部操作：触控目标不低于 46px，两枚按钮等宽 ---------- */
+#user-persona-sheet .up-sheet__foot {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+#user-persona-sheet .up-sheet__foot .btn {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 46px;
+  margin: 0;
+}
+
+#user-persona-sheet .up-sheet__note {
+  flex: 0 0 auto;
+  margin: 11px 2px 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+  text-align: center;
+  color: #a0a0a4;
+}
+
+/* ---------- 暗色主题降级：跟随系统深色玻璃，不出现白底黑字断层 ---------- */
+html[data-theme="dark"] #user-persona-sheet .up-sheet__panel {
+  background: #1c1c1e;
+  box-shadow: 0 -18px 44px rgba(0, 0, 0, 0.5);
+}
+
+html[data-theme="dark"] #user-persona-sheet .up-sheet__handle {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+html[data-theme="dark"] #user-persona-sheet .up-sheet__title p:first-child {
+  color: #f2f2f4;
+}
+
+html[data-theme="dark"] #user-persona-sheet .up-status {
+  color: #9a9aa0;
+}
+
+html[data-theme="dark"] #user-persona-sheet .up-field__label {
+  color: #ececee;
+}
+
+html[data-theme="dark"] #user-persona-sheet .up-field__hint {
+  color: #8e8e94;
+}
+
+html[data-theme="dark"] #user-persona-sheet .up-field__input {
+  color: #f0f0f2;
+  background: #26262a;
+  border-color: rgba(255, 255, 255, 0.09);
+}
+
+html[data-theme="dark"] #user-persona-sheet .up-field__input::placeholder {
+  color: #6e6e75;
+}
+
+html[data-theme="dark"] #user-persona-sheet .up-field__input:focus {
+  background: #2c2c31;
+  border-color: rgba(255, 255, 255, 0.55);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08);
+}
+
+html[data-theme="dark"] #user-persona-sheet .up-sheet__note {
+  color: #85858c;
+}
+
+/* ---------- 窄屏：左右呼吸收紧，标题与收起按钮都不挤成两行 ---------- */
+@media (max-width: 360px) {
+  #user-persona-sheet .up-sheet__panel {
+    padding-left: 13px;
+    padding-right: 13px;
+  }
+
+  #user-persona-sheet .up-sheet__title p:first-child {
+    font-size: 17px;
+  }
+
+  #user-persona-sheet .up-sheet__head {
+    gap: 8px;
+  }
+}
+
+/* ---------- 降级：减弱动效时不做升起动画 ---------- */
+@media (prefers-reduced-motion: reduce) {
+
+  #user-persona-sheet .up-sheet__panel,
+  #user-persona-sheet .up-field__input {
+    animation: none;
+    transition: none;
+  }
+}

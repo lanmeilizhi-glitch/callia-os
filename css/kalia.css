@@ -1,0 +1,289 @@
+/* ==================================================================
+   Callia OS · kalia.css
+   卡莉娅（Callia）AI 智能管家 —— 独立样式，只作用于 #kalia-page
+   与九宫格里的 C 图标（.appgrid__item .ico--kalia）。
+   不覆盖任何主聊天 / 主页既有样式。
+   ================================================================== */
+
+/* ---------- 九宫格「卡莉娅」图标：纯文字 C，与档案 / 伴侣图标同一套极简风格 ----------
+   透明背景、无圆角框、无阴影，颜色与字号完全跟随 .appgrid__item .ico 的既有规则，
+   这里只把字形居中，不再叠加任何装饰。 */
+.appgrid__item .ico--kalia {
+  background: none;
+  border-radius: 0;
+  box-shadow: none;
+  color: inherit;
+  font-family: inherit;
+  font-size: 20px;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+/* ---------- 全屏独立页面 ---------- */
+#kalia-page {
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+  display: none;
+  flex-direction: column;
+  background: #f7f5f6;
+  color: #1d1d1f;
+  font-family: var(--font-ui, -apple-system, "PingFang SC", "Helvetica Neue", Arial, sans-serif);
+  box-sizing: border-box;
+}
+
+html[data-theme="dark"] #kalia-page {
+  background: #17181b;
+  color: #f2f2f4;
+}
+
+/* 顶部导航 */
+.kalia-nav {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: calc(10px + env(safe-area-inset-top)) 14px 10px;
+  background: rgba(255, 255, 255, 0.86);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+html[data-theme="dark"] .kalia-nav {
+  background: rgba(28, 29, 33, 0.9);
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.kalia-nav__back {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.05);
+  color: inherit;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.kalia-nav__back:active {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+html[data-theme="dark"] .kalia-nav__back {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.kalia-nav__title {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.kalia-nav__badge {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 9px;
+  background: linear-gradient(145deg, #ffd9e6, #f79ab8);
+  color: #7a2f4a;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+/* 聊天记录区 */
+#kalia-chat-log {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px 14px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.kalia-msg {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 84%;
+}
+
+.kalia-msg--user {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+
+.kalia-msg--kalia {
+  align-self: flex-start;
+  align-items: flex-start;
+}
+
+.kalia-msg__name {
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  color: #9a9aa0;
+}
+
+.kalia-bubble {
+  padding: 10px 13px;
+  border-radius: 16px;
+  font-size: 14.5px;
+  line-height: 1.55;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.kalia-msg--kalia .kalia-bubble {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-bottom-left-radius: 6px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.kalia-msg--user .kalia-bubble {
+  background: linear-gradient(145deg, #ffd9e6, #f9aec8);
+  color: #4a1f30;
+  border-bottom-right-radius: 6px;
+}
+
+html[data-theme="dark"] .kalia-msg--kalia .kalia-bubble {
+  background: #24262b;
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: none;
+}
+
+html[data-theme="dark"] .kalia-msg--user .kalia-bubble {
+  background: linear-gradient(145deg, #6d3a4e, #8a4761);
+  color: #ffe9f1;
+}
+
+/* 快捷提问：输入框正上方一行，可横向滑动，毛玻璃胶囊 */
+.kalia-quick {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px 2px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.kalia-quick::-webkit-scrollbar {
+  display: none;
+}
+
+.kalia-chip {
+  flex: 0 0 auto;
+  padding: 6px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.45);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  backdrop-filter: blur(12px) saturate(160%);
+  color: #5c5c63;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.kalia-chip:active {
+  transform: scale(0.95);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+html[data-theme="dark"] .kalia-chip {
+  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.08);
+  color: #c9c9d0;
+  box-shadow: none;
+}
+
+html[data-theme="dark"] .kalia-chip:active {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+/* 底部输入区 */
+.kalia-composer {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+  background: rgba(255, 255, 255, 0.92);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border-top: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+html[data-theme="dark"] .kalia-composer {
+  background: rgba(28, 29, 33, 0.94);
+  border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+#kalia-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 40px;
+  padding: 0 14px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 20px;
+  background: #ffffff;
+  color: inherit;
+  font-size: 14.5px;
+  font-family: inherit;
+  outline: none;
+  box-sizing: border-box;
+}
+
+#kalia-input:focus {
+  border-color: #f79ab8;
+}
+
+html[data-theme="dark"] #kalia-input {
+  background: #24262b;
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.kalia-send {
+  flex: 0 0 auto;
+  height: 40px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 20px;
+  background: #1d1d1f;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.kalia-send:active {
+  transform: scale(0.96);
+}
+
+html[data-theme="dark"] .kalia-send {
+  background: #f2f2f4;
+  color: #17181b;
+}

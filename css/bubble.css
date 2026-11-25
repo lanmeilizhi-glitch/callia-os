@@ -1,0 +1,225 @@
+/* ============================================================
+   聊天气泡样式选择面板
+   结构见 index.html 的 #bubble-modal（纯静态标记）
+   交互见 js/bubbleStyle.js（只切换 display 与 is-on）
+   ============================================================ */
+
+#bubble-modal {
+  display: none;
+  /* 默认隐藏；JS 打开时把 display 设为 flex */
+  position: fixed;
+  inset: 0;
+  z-index: 25;
+  /* 高于应用层(20)，低于状态栏(30)：系统状态栏始终清晰可读 */
+  align-items: flex-end;
+  justify-content: center;
+}
+
+#bubble-modal .bubble-modal__mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(18, 18, 20, 0.42);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+}
+
+#bubble-modal .bubble-modal__panel {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  max-height: 84%;
+  padding: 10px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  background: #fff;
+  border-radius: 26px 26px 0 0;
+  box-shadow: 0 -18px 44px rgba(16, 16, 20, 0.22);
+  animation: bubble-rise 0.24s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+@keyframes bubble-rise {
+  from {
+    transform: translateY(18px);
+    opacity: 0.4;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+#bubble-modal .bubble-modal__handle {
+  width: 42px;
+  height: 4px;
+  margin: 4px auto 12px;
+  border-radius: 999px;
+  background: rgba(28, 28, 30, 0.16);
+}
+
+#bubble-modal .bubble-modal__head {
+  padding: 0 2px 12px;
+}
+
+#bubble-modal .bubble-modal__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 650;
+  letter-spacing: 0.2px;
+  color: #1c1c1e;
+}
+
+#bubble-modal .bubble-modal__sub {
+  margin: 5px 0 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: #8a8a8e;
+}
+
+#bubble-modal .bubble-modal__list {
+  display: grid;
+  gap: 10px;
+}
+
+/* ---------- 选项 ---------- */
+#bubble-modal .bubble-opt {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 64px;
+  padding: 11px 13px;
+  text-align: left;
+  background: #f6f6f3;
+  border: 1px solid rgba(28, 28, 30, 0.07);
+  border-radius: 18px;
+  color: #1c1c1e;
+  font: inherit;
+  cursor: pointer;
+  transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
+}
+
+#bubble-modal .bubble-opt:active {
+  transform: scale(0.985);
+}
+
+#bubble-modal .bubble-opt.is-on {
+  background: #fff;
+  border-color: rgba(28, 28, 30, 0.62);
+  box-shadow: 0 8px 20px rgba(16, 16, 20, 0.09);
+}
+
+#bubble-modal .bubble-opt__demo {
+  flex: 0 0 auto;
+  width: 54px;
+  height: 34px;
+  border-radius: 12px;
+  border: 1px solid rgba(28, 28, 30, 0.08);
+  background: #fff;
+}
+
+#bubble-modal .bubble-opt__demo--glass {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(206, 222, 240, 0.62));
+  border-color: rgba(255, 255, 255, 0.9);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+}
+
+#bubble-modal .bubble-opt__demo--gradient {
+  background: linear-gradient(135deg, #ffdfec 0%, #e4e9ff 58%, #d9f4ef 100%);
+  border-color: rgba(28, 28, 30, 0.05);
+}
+
+#bubble-modal .bubble-opt__demo--dark {
+  background: linear-gradient(135deg, #33343c, #22232a);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+#bubble-modal .bubble-opt__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+#bubble-modal .bubble-opt__name {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #1c1c1e;
+}
+
+#bubble-modal .bubble-opt__desc {
+  margin-top: 3px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #8a8a8e;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#bubble-modal .bubble-opt__check {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid rgba(28, 28, 30, 0.14);
+  background: #fff;
+  color: transparent;
+  font-size: 13px;
+  line-height: 1;
+  transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+}
+
+#bubble-modal .bubble-opt__check::after {
+  content: "✓";
+}
+
+#bubble-modal .bubble-opt.is-on .bubble-opt__check {
+  background: #1c1c1e;
+  border-color: #1c1c1e;
+  color: #fff;
+}
+
+/* ---------- 底部取消 ---------- */
+#bubble-modal .bubble-modal__cancel {
+  width: 100%;
+  margin-top: 14px;
+  padding: 13px 0;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  color: #4a4a4e;
+  background: #f2f2ef;
+  border: 0;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: transform 0.16s ease, background 0.16s ease;
+}
+
+#bubble-modal .bubble-modal__cancel:active {
+  transform: scale(0.99);
+  background: #e9e9e6;
+}
+
+#bubble-modal .bubble-modal__note {
+  margin: 12px 2px 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+  text-align: center;
+  color: #a0a0a4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  #bubble-modal .bubble-modal__panel,
+  #bubble-modal .bubble-opt,
+  #bubble-modal .bubble-opt__check,
+  #bubble-modal .bubble-modal__cancel {
+    animation: none;
+    transition: none;
+  }
+}

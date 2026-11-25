@@ -1,0 +1,1178 @@
+/* ===================================================================
+   Callia OS · themes.css
+   全局主题皮肤层：背景 + 强调色
+   · data-theme  = light / dark （组件明暗，由 os.js 维护）
+   · data-skin   = 主题背景（由 theme.js 维护，写在 <html> 上）
+   本文件在 base/apps/widgets 之后加载，只覆盖背景与强调色令牌，
+   不改动任何文字颜色令牌，保证两种明暗模式下都可读。
+   =================================================================== */
+
+/* ---------- 皮肤令牌：每套皮肤各有一组浅色 / 深色取值 ---------- */
+html[data-skin="mist"] {
+  --t-base: #e9e9e7;
+  --t-glow-a: rgba(255, 255, 255, 0.86);
+  --t-glow-b: rgba(0, 0, 0, 0.07);
+  --t-tint: rgba(255, 255, 255, 0.5);
+  --t-accent: #16181b;
+  --t-accent-ink: #f7f7f5;
+}
+html[data-skin="mist"][data-theme="dark"] {
+  --t-base: #191a1d;
+  --t-glow-a: rgba(255, 255, 255, 0.07);
+  --t-glow-b: rgba(0, 0, 0, 0.72);
+  --t-tint: rgba(255, 255, 255, 0.04);
+  --t-accent: #ecece9;
+  --t-accent-ink: #16181b;
+}
+
+html[data-skin="dusk"] {
+  --t-base: #dde3f3;
+  --t-glow-a: rgba(255, 255, 255, 0.9);
+  --t-glow-b: rgba(74, 99, 200, 0.26);
+  --t-tint: rgba(196, 208, 244, 0.55);
+  --t-accent: #3d55b8;
+  --t-accent-ink: #f2f4ff;
+}
+html[data-skin="dusk"][data-theme="dark"] {
+  --t-base: #151a28;
+  --t-glow-a: rgba(126, 152, 255, 0.18);
+  --t-glow-b: rgba(0, 0, 0, 0.74);
+  --t-tint: rgba(60, 80, 160, 0.28);
+  --t-accent: #93a7ff;
+  --t-accent-ink: #121729;
+}
+
+html[data-skin="moss"] {
+  --t-base: #dfe8de;
+  --t-glow-a: rgba(255, 255, 255, 0.9);
+  --t-glow-b: rgba(47, 110, 80, 0.22);
+  --t-tint: rgba(196, 220, 198, 0.5);
+  --t-accent: #2c6b4f;
+  --t-accent-ink: #f1f8f2;
+}
+html[data-skin="moss"][data-theme="dark"] {
+  --t-base: #141d19;
+  --t-glow-a: rgba(120, 200, 160, 0.15);
+  --t-glow-b: rgba(0, 0, 0, 0.74);
+  --t-tint: rgba(40, 110, 80, 0.24);
+  --t-accent: #7fd6a8;
+  --t-accent-ink: #10201a;
+}
+
+html[data-skin="clay"] {
+  --t-base: #f0e3d9;
+  --t-glow-a: rgba(255, 255, 255, 0.92);
+  --t-glow-b: rgba(180, 85, 47, 0.2);
+  --t-tint: rgba(240, 214, 196, 0.6);
+  --t-accent: #a94f2a;
+  --t-accent-ink: #fff6f0;
+}
+html[data-skin="clay"][data-theme="dark"] {
+  --t-base: #221a16;
+  --t-glow-a: rgba(255, 178, 130, 0.14);
+  --t-glow-b: rgba(0, 0, 0, 0.75);
+  --t-tint: rgba(150, 70, 40, 0.24);
+  --t-accent: #f0a97f;
+  --t-accent-ink: #24160f;
+}
+
+html[data-skin="plum"] {
+  --t-base: #e8e0f0;
+  --t-glow-a: rgba(255, 255, 255, 0.9);
+  --t-glow-b: rgba(122, 75, 184, 0.2);
+  --t-tint: rgba(220, 204, 240, 0.55);
+  --t-accent: #6b3fa8;
+  --t-accent-ink: #f6f1ff;
+}
+html[data-skin="plum"][data-theme="dark"] {
+  --t-base: #1a1622;
+  --t-glow-a: rgba(180, 140, 255, 0.16);
+  --t-glow-b: rgba(0, 0, 0, 0.75);
+  --t-tint: rgba(110, 70, 170, 0.24);
+  --t-accent: #c3a4ff;
+  --t-accent-ink: #191325;
+}
+
+html[data-skin="amber"] {
+  --t-base: #f3ead6;
+  --t-glow-a: rgba(255, 255, 255, 0.92);
+  --t-glow-b: rgba(190, 140, 40, 0.22);
+  --t-tint: rgba(246, 228, 190, 0.6);
+  --t-accent: #96660f;
+  --t-accent-ink: #fffaf0;
+}
+html[data-skin="amber"][data-theme="dark"] {
+  --t-base: #1f1b14;
+  --t-glow-a: rgba(255, 206, 120, 0.15);
+  --t-glow-b: rgba(0, 0, 0, 0.75);
+  --t-tint: rgba(160, 120, 40, 0.22);
+  --t-accent: #f0c46a;
+  --t-accent-ink: #221a0d;
+}
+
+html[data-skin="ink"] {
+  --t-base: #d9e6e8;
+  --t-glow-a: rgba(255, 255, 255, 0.9);
+  --t-glow-b: rgba(31, 95, 107, 0.22);
+  --t-tint: rgba(190, 220, 224, 0.55);
+  --t-accent: #1c5b68;
+  --t-accent-ink: #effafb;
+}
+html[data-skin="ink"][data-theme="dark"] {
+  --t-base: #101a1c;
+  --t-glow-a: rgba(110, 200, 205, 0.14);
+  --t-glow-b: rgba(0, 0, 0, 0.75);
+  --t-tint: rgba(30, 110, 120, 0.24);
+  --t-accent: #7fd8dd;
+  --t-accent-ink: #0d1c1e;
+}
+
+html[data-skin="rose"] {
+  --t-base: #f4e0e5;
+  --t-glow-a: rgba(255, 255, 255, 0.92);
+  --t-glow-b: rgba(176, 68, 106, 0.2);
+  --t-tint: rgba(248, 214, 224, 0.6);
+  --t-accent: #a63c60;
+  --t-accent-ink: #fff2f5;
+}
+html[data-skin="rose"][data-theme="dark"] {
+  --t-base: #1f1519;
+  --t-glow-a: rgba(255, 150, 180, 0.14);
+  --t-glow-b: rgba(0, 0, 0, 0.75);
+  --t-tint: rgba(160, 60, 95, 0.22);
+  --t-accent: #ffa8c2;
+  --t-accent-ink: #221117;
+}
+
+/* 兜底：属性缺失时仍有一组可用令牌，避免 var() 解析为空 */
+html {
+  --t-base: #e9e9e7;
+  --t-glow-a: rgba(255, 255, 255, 0.86);
+  --t-glow-b: rgba(0, 0, 0, 0.07);
+  --t-tint: rgba(255, 255, 255, 0.5);
+  --t-accent: #16181b;
+  --t-accent-ink: #f7f7f5;
+}
+
+/* ---------- 全局背景：桌面 / 锁屏 / 启动共用 ---------- */
+/* 选择器需要 html 上同时存在 data-skin 与 data-theme，
+   theme.js 与 os.js 都会保证这一点。 */
+html[data-skin][data-theme] .stage {
+  --bg: var(--t-base);
+  background:
+    radial-gradient(120% 78% at 12% 0%, var(--t-glow-a), transparent 62%),
+    radial-gradient(108% 92% at 88% 100%, var(--t-glow-b), transparent 58%),
+    linear-gradient(168deg, var(--t-tint) 0%, transparent 46%),
+    var(--t-base);
+}
+
+/* 屏幕层透明，让主题背景真正透出来（玻璃组件会跟着一起染色） */
+html[data-skin][data-theme] .screen {
+  background: transparent;
+}
+
+/* ---------- 自定义背景图 ---------- */
+/* theme.js 会把压缩后的图片写成 --bg-img: url("data:image/...;base64,...")，
+   并在 <html> 上写 data-bg="image" 与 data-bg-dim="0|1|2"。
+   遮罩令牌按明暗各给一组，保证玻璃组件上的文字始终可读。 */
+html {
+  --bg-img: none;
+  --bg-veil-1: rgba(247, 247, 245, 0.34);
+  --bg-veil-2: rgba(247, 247, 245, 0.58);
+}
+
+html[data-bg="image"][data-theme="light"] {
+  --bg-veil-1: rgba(247, 247, 245, 0.34);
+  --bg-veil-2: rgba(247, 247, 245, 0.58);
+}
+html[data-bg="image"][data-theme="light"][data-bg-dim="0"] {
+  --bg-veil-1: rgba(247, 247, 245, 0.1);
+  --bg-veil-2: rgba(247, 247, 245, 0.26);
+}
+html[data-bg="image"][data-theme="light"][data-bg-dim="2"] {
+  --bg-veil-1: rgba(247, 247, 245, 0.6);
+  --bg-veil-2: rgba(247, 247, 245, 0.8);
+}
+
+html[data-bg="image"][data-theme="dark"] {
+  --bg-veil-1: rgba(16, 17, 20, 0.5);
+  --bg-veil-2: rgba(16, 17, 20, 0.72);
+}
+html[data-bg="image"][data-theme="dark"][data-bg-dim="0"] {
+  --bg-veil-1: rgba(16, 17, 20, 0.28);
+  --bg-veil-2: rgba(16, 17, 20, 0.5);
+}
+html[data-bg="image"][data-theme="dark"][data-bg-dim="2"] {
+  --bg-veil-1: rgba(16, 17, 20, 0.72);
+  --bg-veil-2: rgba(16, 17, 20, 0.88);
+}
+
+/* ---------- 壁纸铺在「屏幕」这块表面上 ---------- */
+/* 桌面 / 锁屏 / 启动共用 .screen，壁纸必须画在这一层才看得见。
+   用长写属性而不是 background 简写：var() 万一解析失败，
+   只会丢掉 background-image，不会整条声明一起失效。 */
+html[data-bg="image"][data-theme] .screen,
+html[data-bg="image"][data-theme] #screen.screen {
+  background-color: var(--t-base);
+  background-image:
+    linear-gradient(180deg, var(--bg-veil-1) 0%, var(--bg-veil-2) 100%),
+    var(--bg-img);
+  background-position: center center, center center;
+  background-size: cover, cover;
+  background-repeat: no-repeat, no-repeat;
+}
+
+/* 桌面中间几层必须透明，否则壁纸会被夹在中间的背景挡住 */
+html[data-bg="image"][data-theme] .home,
+html[data-bg="image"][data-theme] #home.home,
+html[data-bg="image"][data-theme] .home__carousel,
+html[data-bg="image"][data-theme] #home-carousel.home__carousel,
+html[data-bg="image"][data-theme] .home__track,
+html[data-bg="image"][data-theme] #home-track.home__track,
+html[data-bg="image"][data-theme] .home__page,
+html[data-bg="image"][data-theme] .home__scroll {
+  background: transparent;
+}
+
+/* 手机外的桌面区域同步铺同一张图，整机观感保持一致 */
+html[data-bg="image"][data-theme] .stage {
+  background-color: var(--t-base);
+  background-image:
+    linear-gradient(180deg, var(--bg-veil-1) 0%, var(--bg-veil-2) 100%),
+    var(--bg-img);
+  background-position: center center, center center;
+  background-size: cover, cover;
+  background-repeat: no-repeat, no-repeat;
+}
+
+/* ---------- 强调色：只染控件，不改文字令牌 ---------- */
+html[data-skin][data-theme] .bento {
+  --b-solid: var(--t-accent);
+  --b-solid-ink: var(--t-accent-ink);
+}
+
+html[data-skin][data-theme] .bento .tile__track i {
+  background: var(--t-accent);
+}
+
+html[data-skin][data-theme] .affinity__track > i {
+  background: var(--t-accent);
+}
+
+html[data-skin][data-theme] .pager__dot.is-on {
+  background: var(--t-accent);
+}
+
+html[data-skin][data-theme] .live__dot {
+  background: var(--t-accent);
+}
+
+html[data-skin][data-theme] .btn--solid {
+  background: var(--t-accent);
+  color: var(--t-accent-ink);
+}
+
+html[data-skin][data-theme] .seg__btn.is-on {
+  background: var(--t-accent);
+  color: var(--t-accent-ink);
+}
+
+/* ---------- 设置页 · 主题背景选择器 ---------- */
+.set-row--stack {
+  display: block;
+  align-items: stretch;
+}
+
+.set-row--stack .set-row__label {
+  padding-right: 0;
+}
+
+.skin-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 11px;
+  padding-bottom: 2px;
+}
+
+.skin-swatch {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  margin: 0;
+  padding: 0 0 1px;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: center;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+}
+
+.skin-swatch__fill {
+  display: block;
+  width: 100%;
+  height: 46px;
+  border-radius: 14px;
+  background: linear-gradient(150deg, var(--sw-a, #ddd) 0%, var(--sw-b, #888) 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.08),
+    inset 0 -12px 20px rgba(0, 0, 0, 0.1),
+    0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s cubic-bezier(0.22, 0.61, 0.36, 1), box-shadow 0.2s ease;
+}
+
+.skin-swatch:active .skin-swatch__fill {
+  transform: scale(0.93);
+}
+
+.skin-swatch:focus-visible {
+  outline: 2px solid var(--t-accent);
+  outline-offset: 3px;
+  border-radius: 14px;
+}
+
+.skin-swatch__name {
+  display: block;
+  font-size: 10.5px;
+  line-height: 1.25;
+  letter-spacing: 0.02em;
+  opacity: 0.62;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.skin-swatch.is-on .skin-swatch__fill {
+  box-shadow:
+    inset 0 0 0 2px var(--t-accent),
+    0 3px 12px rgba(0, 0, 0, 0.18);
+}
+
+.skin-swatch.is-on .skin-swatch__name {
+  opacity: 1;
+  font-weight: 600;
+}
+
+.skin-swatch__dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--t-accent-ink);
+  box-shadow: 0 0 0 1.5px var(--t-accent);
+  opacity: 0;
+  transform: scale(0.4);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.skin-swatch.is-on .skin-swatch__dot {
+  opacity: 1;
+  transform: scale(1);
+}
+
+@media (max-width: 380px) {
+  .skin-grid {
+    gap: 7px;
+  }
+
+  .skin-swatch__fill {
+    height: 42px;
+    border-radius: 12px;
+  }
+
+  .skin-swatch__name {
+    font-size: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skin-swatch__fill,
+  .skin-swatch__dot {
+    transition: none;
+  }
+}
+
+body[data-motion="off"] .skin-swatch__fill,
+body[data-motion="off"] .skin-swatch__dot {
+  transition: none;
+}
+
+/* ---------- 设置页 · 自定义背景图 ---------- */
+.bg-custom {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  margin-top: 11px;
+}
+
+.bg-custom .bg-off {
+  display: none;
+}
+
+.bg-custom__preview {
+  position: relative;
+  flex: 0 0 auto;
+  width: 62px;
+  height: 96px;
+  border-radius: 14px;
+  background-color: var(--t-tint);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.bg-custom__preview::after {
+  content: "＋";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 17px;
+  line-height: 1;
+  opacity: 0.45;
+}
+
+.bg-custom__preview.is-filled::after {
+  content: none;
+}
+
+.bg-custom__side {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.bg-custom__btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.bg-custom__veil {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.bg-custom__veil-label {
+  flex: 0 0 auto;
+  font-size: 11px;
+  line-height: 1;
+  opacity: 0.55;
+}
+
+.bg-custom .seg--dim {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.bg-custom .seg--dim .seg__btn {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 6px 4px;
+  font-size: 11.5px;
+}
+
+.bg-custom__note {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.45;
+  opacity: 0.5;
+}
+
+@media (max-width: 380px) {
+  .bg-custom {
+    gap: 10px;
+  }
+
+  .bg-custom__preview {
+    width: 54px;
+    height: 86px;
+  }
+
+  .bg-custom .seg--dim .seg__btn {
+    padding: 6px 3px;
+    font-size: 11px;
+  }
+}
+
+/* ============================================================
+   桌面壁纸
+   · theme.js 把内置壁纸写成 --bg-img 的渐变，与本机图片共用
+     同一层铺法；data-bg-kind="preset" 时遮罩更轻，保留壁纸本身颜色。
+   ============================================================ */
+
+/* 内置壁纸的遮罩：比本机图片更透，文字可读靠预设自身的深浅变体 */
+html[data-bg="image"][data-bg-kind="preset"][data-theme="light"] {
+  --bg-veil-1: rgba(247, 247, 245, 0.1);
+  --bg-veil-2: rgba(247, 247, 245, 0.3);
+}
+html[data-bg="image"][data-bg-kind="preset"][data-theme="light"][data-bg-dim="0"] {
+  --bg-veil-1: rgba(247, 247, 245, 0.02);
+  --bg-veil-2: rgba(247, 247, 245, 0.14);
+}
+html[data-bg="image"][data-bg-kind="preset"][data-theme="light"][data-bg-dim="2"] {
+  --bg-veil-1: rgba(247, 247, 245, 0.42);
+  --bg-veil-2: rgba(247, 247, 245, 0.62);
+}
+
+html[data-bg="image"][data-bg-kind="preset"][data-theme="dark"] {
+  --bg-veil-1: rgba(16, 17, 20, 0.22);
+  --bg-veil-2: rgba(16, 17, 20, 0.46);
+}
+html[data-bg="image"][data-bg-kind="preset"][data-theme="dark"][data-bg-dim="0"] {
+  --bg-veil-1: rgba(16, 17, 20, 0.08);
+  --bg-veil-2: rgba(16, 17, 20, 0.26);
+}
+html[data-bg="image"][data-bg-kind="preset"][data-theme="dark"][data-bg-dim="2"] {
+  --bg-veil-1: rgba(16, 17, 20, 0.55);
+  --bg-veil-2: rgba(16, 17, 20, 0.76);
+}
+
+/* 长按桌面换壁纸时，不弹系统文字菜单，也不选中文字 */
+#home.home {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+#screen.screen {
+  position: relative;
+}
+
+/* ---------- 面板外壳 ---------- */
+.wp-sheet {
+  position: absolute;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  align-items: flex-end;
+}
+
+.wp-sheet[hidden] {
+  display: none;
+}
+
+.wp-sheet__mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(16, 17, 20, 0.44);
+  opacity: 0;
+  transition: opacity 0.26s ease;
+}
+
+.wp-sheet.is-on .wp-sheet__mask {
+  opacity: 1;
+}
+
+.wp-sheet__panel {
+  position: relative;
+  width: 100%;
+  max-height: 88%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 10px 16px calc(14px + env(safe-area-inset-bottom));
+  border-radius: 26px 26px 0 0;
+  background: rgba(250, 250, 248, 0.95);
+  color: #1b1c1f;
+  box-shadow:
+    0 -14px 44px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  -webkit-backdrop-filter: blur(22px) saturate(140%);
+  backdrop-filter: blur(22px) saturate(140%);
+  transform: translateY(102%);
+  transition: transform 0.34s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+[data-theme="dark"] .wp-sheet__panel {
+  background: rgba(26, 27, 31, 0.95);
+  color: #ececeb;
+  box-shadow:
+    0 -14px 44px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.wp-sheet.is-on .wp-sheet__panel {
+  transform: translateY(0);
+}
+
+.wp-sheet__handle {
+  flex: 0 0 auto;
+  width: 38px;
+  height: 4px;
+  margin: 0 auto 11px;
+  border-radius: 99px;
+  background: currentColor;
+  opacity: 0.22;
+}
+
+.wp-sheet__head {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.wp-sheet__title {
+  min-width: 0;
+}
+
+.wp-sheet__title p {
+  margin: 0;
+}
+
+.wp-sheet__title p:first-child {
+  font-size: 15.5px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.wp-sheet__title p:last-child {
+  margin-top: 3px;
+  font-size: 11.5px;
+  line-height: 1.3;
+  opacity: 0.56;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wp-sheet__scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.wp-sheet__note {
+  margin: 12px 0 0;
+  font-size: 11px;
+  line-height: 1.5;
+  opacity: 0.5;
+}
+
+.wp-sheet__foot {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.wp-sheet__foot .btn {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* ---------- 壁纸缩略图网格 ---------- */
+.wp-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 9px;
+  margin-top: 13px;
+}
+
+.wp-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  margin: 0;
+  padding: 0 0 1px;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: center;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+}
+
+.wp-tile__fill {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 76px;
+  border-radius: 14px;
+  background-color: rgba(140, 145, 152, 0.16);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.08),
+    inset 0 -14px 22px rgba(0, 0, 0, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.12);
+  transition: transform 0.2s cubic-bezier(0.22, 0.61, 0.36, 1), box-shadow 0.2s ease;
+}
+
+.wp-tile:active .wp-tile__fill {
+  transform: scale(0.94);
+}
+
+.wp-tile:focus-visible {
+  outline: 2px solid var(--t-accent);
+  outline-offset: 3px;
+  border-radius: 14px;
+}
+
+.wp-tile__fill.is-empty::after {
+  content: "＋";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  line-height: 1;
+  opacity: 0.42;
+}
+
+.wp-tile__name {
+  display: block;
+  font-size: 10.5px;
+  line-height: 1.25;
+  letter-spacing: 0.02em;
+  opacity: 0.62;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wp-tile.is-on .wp-tile__fill {
+  box-shadow:
+    inset 0 0 0 2px var(--t-accent),
+    0 3px 12px rgba(0, 0, 0, 0.2);
+}
+
+.wp-tile.is-on .wp-tile__name {
+  opacity: 1;
+  font-weight: 600;
+}
+
+.wp-tile__dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #fbfbf9;
+  box-shadow: 0 0 0 1.5px rgba(0, 0, 0, 0.28);
+  opacity: 0;
+  transform: scale(0.4);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.wp-tile.is-on .wp-tile__dot {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ---------- 遮罩浓度 ---------- */
+.wp-veil {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.wp-veil.is-off {
+  display: none;
+}
+
+.wp-veil__label {
+  flex: 0 0 auto;
+  font-size: 11.5px;
+  line-height: 1;
+  opacity: 0.58;
+}
+
+.wp-veil__seg {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.wp-veil__seg .seg__btn {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 7px 4px;
+  font-size: 11.5px;
+}
+
+@media (max-width: 380px) {
+  .wp-sheet__panel {
+    padding-left: 13px;
+    padding-right: 13px;
+  }
+
+  .wp-grid {
+    gap: 8px;
+  }
+
+  .wp-tile__fill {
+    height: 66px;
+    border-radius: 12px;
+  }
+
+  .wp-tile__name {
+    font-size: 10px;
+  }
+
+  .wp-veil__seg .seg__btn {
+    padding: 7px 3px;
+    font-size: 11px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wp-sheet__mask,
+  .wp-sheet__panel,
+  .wp-tile__fill,
+  .wp-tile__dot {
+    transition: none;
+  }
+}
+
+body[data-motion="off"] .wp-sheet__panel,
+body[data-motion="off"] .wp-sheet__mask {
+  transition: none;
+}
+
+/* ===================================================================
+   全局玻璃外观（莫兰迪色系）
+   · data-glass = none / pink / green / blue / purple / light / dark
+     由 theme.js 写在 <html> 上，与 data-skin（背景）、data-theme（明暗）互不影响。
+   · 只改三个玻璃底色令牌 + 毛玻璃饱和度，组件继续用 var(--glass*)，
+     所以设置页 / 心情页 / 主页卡片 / 按钮 / 弹窗会一起换色。
+   =================================================================== */
+
+/* ---------- 浅色模式：莫兰迪色作为玻璃底色 ---------- */
+html[data-glass="pink"] {
+  --glass-tint: 243, 223, 226;
+  --glass-tint-soft: 247, 233, 235;
+  --glass-tint-strong: 238, 214, 218;
+  --glass-sat: 1.06;
+}
+html[data-glass="green"] {
+  --glass-tint: 223, 232, 223;
+  --glass-tint-soft: 234, 240, 234;
+  --glass-tint-strong: 212, 224, 212;
+  --glass-sat: 1.04;
+}
+html[data-glass="blue"] {
+  --glass-tint: 221, 229, 238;
+  --glass-tint-soft: 233, 239, 245;
+  --glass-tint-strong: 209, 220, 232;
+  --glass-sat: 1.06;
+}
+html[data-glass="purple"] {
+  --glass-tint: 230, 224, 236;
+  --glass-tint-soft: 239, 235, 243;
+  --glass-tint-strong: 219, 211, 227;
+  --glass-sat: 1.06;
+}
+html[data-glass="light"] {
+  --glass-tint: 251, 251, 250;
+  --glass-tint-soft: 253, 253, 252;
+  --glass-tint-strong: 246, 246, 244;
+  --glass-sat: 1;
+}
+html[data-glass="dark"] {
+  --glass-tint: 58, 60, 66;
+  --glass-tint-soft: 48, 50, 56;
+  --glass-tint-strong: 40, 42, 48;
+  --glass-sat: 1;
+}
+
+/* ---------- 深色模式：同一套色相压暗，保持可读 ---------- */
+html[data-glass="pink"][data-theme="dark"] {
+  --glass-tint: 58, 46, 50;
+  --glass-tint-soft: 48, 38, 42;
+  --glass-tint-strong: 40, 31, 35;
+}
+html[data-glass="green"][data-theme="dark"] {
+  --glass-tint: 44, 56, 48;
+  --glass-tint-soft: 36, 47, 40;
+  --glass-tint-strong: 29, 39, 33;
+}
+html[data-glass="blue"][data-theme="dark"] {
+  --glass-tint: 44, 52, 64;
+  --glass-tint-soft: 36, 43, 54;
+  --glass-tint-strong: 29, 35, 45;
+}
+html[data-glass="purple"][data-theme="dark"] {
+  --glass-tint: 52, 46, 62;
+  --glass-tint-soft: 43, 38, 52;
+  --glass-tint-strong: 35, 30, 43;
+}
+html[data-glass="light"][data-theme="dark"] {
+  --glass-tint: 62, 64, 70;
+  --glass-tint-soft: 52, 54, 60;
+  --glass-tint-strong: 44, 46, 52;
+}
+html[data-glass="dark"][data-theme="dark"] {
+  --glass-tint: 34, 36, 42;
+  --glass-tint-soft: 27, 29, 34;
+  --glass-tint-strong: 21, 23, 27;
+}
+
+/* ---------- 把令牌接回真正的玻璃配方 ---------- */
+html[data-glass][data-theme] {
+  --glass: rgba(var(--glass-tint), 0.92);
+  --glass-soft: rgba(var(--glass-tint-soft), 0.66);
+  --glass-strong: rgba(var(--glass-tint-strong), 0.96);
+  --glass-blur: blur(22px) saturate(var(--glass-sat, 1));
+}
+
+html[data-glass][data-theme="dark"] {
+  --glass: rgba(var(--glass-tint), 0.7);
+  --glass-soft: rgba(var(--glass-tint-soft), 0.55);
+  --glass-strong: rgba(var(--glass-tint-strong), 0.9);
+}
+
+/* 玻璃外观生效时，玻璃底色带一点同色相的光晕，避免只是“变灰” */
+html[data-glass]:not([data-glass="none"])[data-theme="light"] .glass,
+html[data-glass]:not([data-glass="none"])[data-theme="light"] .app-head,
+html[data-glass]:not([data-glass="none"])[data-theme="light"] .set-group,
+html[data-glass]:not([data-glass="none"])[data-theme="light"] .card {
+  background-image: linear-gradient(160deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) 62%);
+}
+
+/* 弹窗 / 半屏面板：跟随玻璃外观（原本写死的白底与深色底） */
+html[data-glass]:not([data-glass="none"]) #bubble-modal .bubble-modal__panel {
+  background: var(--glass-strong);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+}
+
+html[data-glass]:not([data-glass="none"]) #bubble-modal .bubble-opt {
+  background: var(--glass-soft);
+}
+
+html[data-glass]:not([data-glass="none"]) #bubble-modal .bubble-opt.is-on {
+  background: var(--glass);
+}
+
+html[data-glass]:not([data-glass="none"]) .wp-sheet__panel {
+  background: var(--glass-strong);
+}
+
+html[data-glass]:not([data-glass="none"])[data-theme="dark"] .wp-sheet__panel {
+  background: var(--glass-strong);
+}
+
+/* 设置页的实心按钮 / 分段控件保持对比度，只让底色轻微带上色相 */
+html[data-glass]:not([data-glass="none"])[data-theme="light"] .seg {
+  background: var(--glass-soft);
+}
+
+/* ---------- 设置页 · 外观入口行 ---------- */
+.set-row--go {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin: 0;
+  padding: 13px 2px;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+}
+
+.set-row--go:active {
+  opacity: 0.66;
+}
+
+.set-row--go .set-row__label {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.set-row__t {
+  font-size: 14.5px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.set-row__d {
+  font-size: 11.5px;
+  line-height: 1.35;
+  opacity: 0.55;
+}
+
+.set-row__value {
+  flex: 0 0 auto;
+  max-width: 42%;
+  font-size: 12.5px;
+  line-height: 1.3;
+  opacity: 0.62;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.set-row__arrow {
+  flex: 0 0 auto;
+  width: 7px;
+  height: 7px;
+  margin-left: 2px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+  opacity: 0.34;
+}
+
+/* ---------- 外观内页 · 玻璃外观选项 ---------- */
+.glass-list {
+  display: grid;
+  gap: 9px;
+  margin-top: 4px;
+}
+
+.glass-opt {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 62px;
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--glass-edge);
+  border-radius: 18px;
+  background: var(--glass-soft);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+  transition: transform 0.16s var(--ease), border-color 0.16s var(--ease), background 0.16s var(--ease);
+}
+
+.glass-opt:active {
+  transform: scale(0.985);
+}
+
+.glass-opt.is-on {
+  background: var(--glass);
+  border-color: var(--t-accent);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+.glass-opt__fill {
+  position: relative;
+  flex: 0 0 auto;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: linear-gradient(150deg, var(--g-a, #f7f7f5) 0%, var(--g-b, #dcdcd8) 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.55),
+    inset 0 -10px 16px rgba(0, 0, 0, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* 缩略图里叠一层毛玻璃，直观表达“玻璃外观” */
+.glass-opt__fill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.06) 58%);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+
+.glass-opt__body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.glass-opt__name {
+  font-size: 14.5px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.glass-opt__desc {
+  font-size: 11.5px;
+  line-height: 1.35;
+  opacity: 0.55;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.glass-opt__check {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-edge);
+  background: var(--glass-soft);
+  color: transparent;
+  font-size: 12px;
+  line-height: 1;
+  transition: background 0.16s var(--ease), border-color 0.16s var(--ease), color 0.16s var(--ease);
+}
+
+.glass-opt__check::after {
+  content: "✓";
+}
+
+.glass-opt.is-on .glass-opt__check {
+  background: var(--t-accent);
+  border-color: var(--t-accent);
+  color: var(--t-accent-ink);
+}
+
+@media (max-width: 380px) {
+  .glass-opt {
+    gap: 10px;
+    padding: 9px 10px;
+  }
+
+  .glass-opt__fill {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-opt,
+  .glass-opt__check {
+    transition: none;
+  }
+}
+
+body[data-motion="off"] .glass-opt,
+body[data-motion="off"] .glass-opt__check {
+  transition: none;
+}

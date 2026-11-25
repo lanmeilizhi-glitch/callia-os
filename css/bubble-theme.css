@@ -1,0 +1,330 @@
+/* =====================================================================
+   Callia OS · bubble-theme.css
+   聊天气泡「多材质 + 多颜色」自定义。
+   · 材质类名由 bubbleTheme.js 写在每个 .msg__bubble 上，选择结果存 localStorage
+   · 选择器一律写成 .msg--me / .msg--ai + .msg__bubble.bubble-xxx，
+     特异性 (0,3,0) 高于 chatbg.css 的聊天背景态规则 (0,2,1)，材质一定生效
+   · 材质只用纯色、渐变、半透明与模糊，不引用任何外部图片，避免加载失败拖慢页面
+   · 每种材质都配了浅色 / 深色主题两套文字色，并在面板里提供深浅背景图实时预览
+   ===================================================================== */
+
+/* ---------- 1 · 毛玻璃 ---------- */
+/* 需求指定的 rgba(255,255,255,.3) + blur(10px)；再叠一层很淡的白色渐变，
+   这样压在深色背景图上时，深色文字底下仍有足够亮的底，不会糊成一片。 */
+.msg--me .msg__bubble.bubble-glass,
+.msg--ai .msg__bubble.bubble-glass {
+  background-color: rgba(255, 255, 255, 0.3);
+  background-image: linear-gradient(168deg, rgba(255, 255, 255, 0.36), rgba(255, 255, 255, 0.12));
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
+  backdrop-filter: blur(10px) saturate(150%);
+  border-color: rgba(255, 255, 255, 0.62);
+  box-shadow: 0 10px 26px rgba(8, 10, 14, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  color: #14161b;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+html[data-theme="dark"] .msg--me .msg__bubble.bubble-glass,
+html[data-theme="dark"] .msg--ai .msg__bubble.bubble-glass {
+  background-color: rgba(26, 28, 33, 0.34);
+  background-image: linear-gradient(168deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04));
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #f2f3f5;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* ---------- 2 · 柔和渐变 ---------- */
+/* 我 = 暖调，Ta = 冷调：同一种材质也能一眼分清是谁在说话。
+   渐变本身是浅色的，所以深浅主题都用深色文字，无需再分一套。 */
+.msg--me .msg__bubble.bubble-gradient {
+  background: linear-gradient(135deg, #ffd9c8 0%, #f8c3d8 48%, #dcc7f7 100%);
+  border-color: rgba(255, 255, 255, 0.55);
+  color: #35202c;
+  box-shadow: 0 10px 24px rgba(96, 52, 82, 0.18);
+}
+
+.msg--ai .msg__bubble.bubble-gradient {
+  background: linear-gradient(135deg, #d6e9ff 0%, #d2f0e7 52%, #eef6d8 100%);
+  border-color: rgba(255, 255, 255, 0.55);
+  color: #1c2b33;
+  box-shadow: 0 10px 24px rgba(30, 62, 78, 0.16);
+}
+
+/* ---------- 3 · 纸张质感 ---------- */
+/* 微弱半透明纯色 + 细微内阴影，像一张压在桌上的便签纸 */
+.msg--me .msg__bubble.bubble-paper,
+.msg--ai .msg__bubble.bubble-paper {
+  background-color: rgba(250, 247, 241, 0.86);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) 44%);
+  border-color: rgba(126, 112, 92, 0.22);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    inset 0 -8px 16px rgba(140, 124, 98, 0.1), 0 6px 18px rgba(20, 18, 14, 0.1);
+  color: #2b2721;
+}
+
+html[data-theme="dark"] .msg--me .msg__bubble.bubble-paper,
+html[data-theme="dark"] .msg--ai .msg__bubble.bubble-paper {
+  background-color: rgba(48, 45, 40, 0.86);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0) 44%);
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -8px 16px rgba(0, 0, 0, 0.22),
+    0 6px 18px rgba(0, 0, 0, 0.3);
+  color: #ece6db;
+}
+
+/* ---------- 4 · 暗黑磨砂 ---------- */
+/* 深灰半透明背景 + 白字，深浅主题同一套（本来就是深色材质） */
+.msg--me .msg__bubble.bubble-dark,
+.msg--ai .msg__bubble.bubble-dark {
+  background-color: rgba(24, 26, 30, 0.74);
+  background-image: linear-gradient(160deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02));
+  -webkit-backdrop-filter: blur(8px) saturate(120%);
+  backdrop-filter: blur(8px) saturate(120%);
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  color: #f3f4f6;
+  text-shadow: none;
+}
+
+.msg--me .msg__bubble.bubble-dark {
+  background-color: rgba(32, 35, 40, 0.84);
+}
+
+/* ---------- 5 · 气泡内译文跟着材质走 ---------- */
+/* 译文原本用主题变量着色：深色主题配浅色材质会糊成一片，这里按材质表面明暗固定。 */
+.msg .msg__bubble.bubble-glass .msg__trans,
+.msg .msg__bubble.bubble-gradient .msg__trans,
+.msg .msg__bubble.bubble-paper .msg__trans {
+  color: rgba(30, 28, 26, 0.72);
+  border-top-color: rgba(30, 28, 26, 0.2);
+}
+
+.msg .msg__bubble.bubble-dark .msg__trans {
+  color: rgba(243, 244, 246, 0.74);
+  border-top-color: rgba(255, 255, 255, 0.2);
+}
+
+.msg .msg__bubble.bubble-dark .msg__trans__tag {
+  color: rgba(243, 244, 246, 0.8);
+  background: rgba(255, 255, 255, 0.14);
+}
+
+/* ---------- 6 · 顶栏调色盘入口 ---------- */
+.chat__theme {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--glass-border);
+  border-radius: 50%;
+  background: var(--glass);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-shadow);
+  color: var(--ink-2);
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.16s var(--ease), box-shadow 0.16s var(--ease), color 0.16s var(--ease);
+}
+
+.chat__theme:active {
+  transform: scale(0.92);
+  box-shadow: var(--in);
+}
+
+.chat__theme svg {
+  display: block;
+  width: 19px;
+  height: 19px;
+}
+
+/* ---------- 7 · 材质面板（复用 base.css 的 .sheet 半屏弹层） ---------- */
+/* .sheet 自身是 display:flex，必须让 hidden 真的能收起它 */
+.btheme-sheet[hidden] {
+  display: none;
+}
+
+.btheme-tabs {
+  display: flex;
+  gap: 4px;
+  margin: 0 0 12px;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--glass-soft);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--in);
+}
+
+.btheme-tab {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 36px;
+  border-radius: 999px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--ink-3);
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.16s var(--ease), background 0.16s var(--ease), box-shadow 0.16s var(--ease);
+}
+
+.btheme-tab.is-on {
+  background: var(--glass-strong);
+  box-shadow: var(--glass-shadow);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* 深浅两种背景图实时预览：换材质时一眼看清文字是否还清楚 */
+.btheme-previews {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+  margin-bottom: 12px;
+}
+
+.btheme-preview {
+  min-width: 0;
+  padding: 11px 10px 9px;
+  border-radius: 16px;
+  box-shadow: inset 0 0 0 1px rgba(127, 127, 127, 0.18);
+}
+
+.btheme-preview--light {
+  background: linear-gradient(150deg, #f5f3ef 0%, #dde2e8 100%);
+}
+
+.btheme-preview--dark {
+  background: linear-gradient(150deg, #2c2f35 0%, #131519 100%);
+}
+
+.btheme-preview__cap {
+  margin-top: 7px;
+  font-size: 9.5px;
+  letter-spacing: 0.16em;
+}
+
+.btheme-preview--light .btheme-preview__cap {
+  color: rgba(20, 22, 26, 0.55);
+}
+
+.btheme-preview--dark .btheme-preview__cap {
+  color: rgba(243, 244, 246, 0.6);
+}
+
+/* 面板里的示例气泡不参与聊天区的材质刷新 */
+.btheme-sheet .msg {
+  max-width: 100%;
+  animation: none;
+}
+
+.btheme-sheet .msg__bubble {
+  font-size: 12px;
+  line-height: 1.6;
+  padding: 8px 11px;
+}
+
+.btheme-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.btheme-swatch {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 10px;
+  border-radius: 16px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-soft);
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.16s var(--ease), box-shadow 0.16s var(--ease), border-color 0.16s var(--ease);
+}
+
+.btheme-swatch:active {
+  transform: scale(0.98);
+}
+
+.btheme-swatch.is-on {
+  border-color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--ink);
+}
+
+.btheme-swatch__demo {
+  display: flex;
+  min-width: 0;
+  padding: 8px;
+  border-radius: 12px;
+  background: linear-gradient(150deg, #eceae6 0%, #2a2d33 100%);
+}
+
+.btheme-swatch__demo .msg {
+  max-width: 100%;
+}
+
+.btheme-swatch__name {
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  color: var(--ink-2);
+}
+
+.btheme-swatch.is-on .btheme-swatch__name {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.btheme-swatch__hint {
+  margin-top: -5px;
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  color: var(--ink-4);
+}
+
+.btheme-swatch__dot {
+  position: absolute;
+  right: 9px;
+  top: 9px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--ink);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.28), inset 0 0 0 3px var(--glass-strong);
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 0.16s var(--ease), transform 0.16s var(--ease);
+}
+
+.btheme-swatch.is-on .btheme-swatch__dot {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ---------- 8 · 窄屏与减少动效 ---------- */
+@media (max-width: 360px) {
+  .btheme-previews,
+  .btheme-grid {
+    gap: 8px;
+  }
+
+  .btheme-swatch {
+    padding: 9px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chat__theme,
+  .btheme-tab,
+  .btheme-swatch,
+  .btheme-swatch__dot {
+    transition: none;
+  }
+}
+
+body[data-motion="off"] .chat__theme,
+body[data-motion="off"] .btheme-tab,
+body[data-motion="off"] .btheme-swatch,
+body[data-motion="off"] .btheme-swatch__dot {
+  transition: none;
+}

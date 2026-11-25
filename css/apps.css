@@ -1,0 +1,1236 @@
+/* =========================================================
+   Companion OS · apps.css
+   六个应用界面：对话 / 心情 / 日程 / 音乐 / 记忆 / 设置
+   ========================================================= */
+
+/* ---------- 对话 ---------- */
+.chat__day {
+  align-self: center;
+  font-size: 10px;
+  letter-spacing: 0.26em;
+  color: var(--ink-3);
+  padding: var(--sp-1) var(--sp-4);
+  border-radius: var(--r-pill);
+  background: var(--glass-soft);
+  border: 1px solid var(--glass-border);
+}
+
+.msg {
+  max-width: 82%;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  animation: msgIn 0.3s var(--ease) both;
+  /* 点击气泡是「引用」操作：整行禁止选中文字，点击时不会拖出蓝色选区 */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@keyframes msgIn {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ---------- 离线梦境日记卡片（已从第一屏移除，样式保留给旧存档/其它入口） ---------- */
+#offline-diary-card {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 16px;
+  margin: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  border: 1px solid rgba(255,255,255,0.8);
+  color: #333;
+}
+.diary-header {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+}
+.diary-text {
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.msg__bubble {
+  padding: 11px var(--sp-4);
+  border: 1px solid transparent;
+  border-radius: var(--r-md);
+  font-size: 13.5px;
+  line-height: 1.75;
+  letter-spacing: 0.02em;
+  word-break: break-word;
+  /* 点击气泡即「引用」这句话：禁止文本选中与系统长按菜单 */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.msg__time { font-size: 9.5px; letter-spacing: 0.14em; color: var(--ink-4); font-family: var(--font-num); }
+
+/* 双语对照：伴侣用外语回复时，原文下方的中文译文 —— 小一号、浅一档、顶部分割线 */
+.msg__bubble .msg__trans {
+  display: block;
+  margin-top: 8px;
+  padding-top: 7px;
+  border-top: 1px dashed var(--line);
+  font-size: 0.86em;
+  line-height: 1.55;
+  letter-spacing: 0.01em;
+  color: var(--ink-4);
+}
+.msg__bubble .msg__trans__tag {
+  display: inline-block;
+  margin-right: 5px;
+  padding: 0 4px;
+  border-radius: 4px;
+  font-size: 9px;
+  line-height: 14px;
+  letter-spacing: 0.08em;
+  color: var(--ink-4);
+  background: rgba(127, 127, 127, 0.14);
+  vertical-align: 1px;
+}
+.msg__bubble .msg__trans__text { display: inline; }
+
+.msg--ai { align-self: flex-start; }
+.msg--ai .msg__bubble {
+  border-bottom-left-radius: var(--r-xs);
+  background: var(--glass);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), var(--glass-top);
+}
+
+.msg--me { align-self: flex-end; align-items: flex-end; }
+.msg--me .msg__bubble {
+  border-bottom-right-radius: var(--r-xs);
+  background: var(--ink);
+  border-color: transparent;
+  color: var(--surface);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.16);
+}
+
+.msg--sys {
+  align-self: center;
+  max-width: 90%;
+  text-align: center;
+}
+
+.msg--sys .msg__bubble {
+  background: var(--glass-soft);
+  border: 1px solid var(--glass-border);
+  box-shadow: none;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  color: var(--ink-3);
+  padding: 7px var(--sp-4);
+}
+
+.msg--typing .msg__bubble { display: inline-flex; align-items: center; gap: 5px; padding: 14px var(--sp-4); }
+
+/* ============================================================
+   气泡材质（四个预设，对应设置页「聊天气泡样式」）
+   设置页把选择存进 localStorage('bubble_style')，apps.js 渲染气泡时按值
+   往气泡 div 上加一个类名（最基础的 if-else，分支里只有字面量类名）：
+   · plain     → .bubble-plain     极简白：纯白扁平 + 柔和投影
+   · glass     → .bubble-glass     毛玻璃：半透明 + backdrop-filter 模糊
+   · gradient  → .bubble-gradient  柔和渐变：粉 → 紫 → 蓝
+   · dark      → .bubble-dark      暗黑质感：炭黑半透明 + 白字
+   没存过或值不认识时一个类名都不加，气泡保持系统默认外观。
+   材质只写背景 / 描边 / 投影 / 气泡内文字色，圆角与内边距仍用基础规则，
+   选择器一律带 .msg__bubble，不会改动页面背景与其他区域的文字颜色。
+   用 !important 的原因：chatbg.css 的壁纸气泡规则
+   （html[data-chat-bg="preset"] .msg--ai .msg__bubble）特异性更高，
+   而且在本文件之后加载，不加就会被聊天背景反盖回去。
+   ============================================================ */
+/* 四套材质类（bubble-plain / bubble-glass / bubble-gradient / bubble-dark）
+   按需求原样写在文件最下面，这里不再保留旧版本，避免高特异性规则反盖。 */
+
+.dots { display: inline-flex; gap: 4px; }
+
+.dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ink-3);
+  animation: blink 1.2s var(--ease) infinite;
+}
+
+.dots i:nth-child(2) { animation-delay: 0.18s; }
+.dots i:nth-child(3) { animation-delay: 0.36s; }
+
+@keyframes blink {
+  0%, 100% { opacity: 0.25; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(-3px); }
+}
+
+/* 引用预览框：长按气泡选「引用」后出现在输入框上方，
+   位置就是原来的快捷回复栏。紧凑单行，超出部分省略号。 */
+.chat__quote {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0 var(--sp-4) var(--sp-2);
+  padding: 7px 8px 7px 10px;
+  border-radius: var(--r-md);
+  background: var(--glass-soft);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  animation: rise 0.24s var(--ease) both;
+}
+
+/* hidden 必须能压住上面的 display: flex，否则取消引用后预览框不会收起 */
+.chat__quote[hidden] {
+  display: none;
+}
+
+.chat__quote__bar {
+  flex: 0 0 auto;
+  width: 3px;
+  height: 28px;
+  border-radius: var(--r-pill);
+  background: var(--ink-3);
+}
+
+.chat__quote__body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.chat__quote__who {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--ink-3);
+}
+
+.chat__quote__text {
+  margin-top: 2px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chat__quote__close {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  color: var(--ink-3);
+  font-size: 16px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  transition: transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+}
+
+.chat__quote__close:active {
+  box-shadow: var(--in);
+  transform: scale(0.92);
+}
+
+.chat__foot { padding-top: 0; }
+
+.chat__send {
+  width: 46px;
+  min-width: 46px;
+  height: 46px;
+  padding: 0;
+  border-radius: 50%;
+}
+
+.chat__send::after {
+  content: "";
+  width: 11px;
+  height: 11px;
+  border-top: 1.7px solid currentColor;
+  border-right: 1.7px solid currentColor;
+  transform: rotate(45deg) translate(-2px, 2px);
+}
+
+/* 纯手动留言板模式：队列里有留言时，发送箭头变身「让Ta回复 (N)」。
+   只新增召唤态规则，开关关闭时按钮永远保持上面的发送箭头。 */
+.chat__send.is-summon {
+  width: auto;
+  min-width: 46px;
+  padding: 0 14px;
+  border-radius: 23px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+
+.chat__send.is-summon::after {
+  content: "让Ta回复 (" attr(data-count) ")";
+  width: auto;
+  height: auto;
+  border: 0;
+  transform: none;
+  font-size: 13px;
+  line-height: 1;
+}
+
+/* ---------- 心情 ----------
+   只展示 TA 自己的心情：顶部心情卡（大数字 + 描述语）→ 五个心情状态
+   → 四张数据卡片 → 近 7 日心情曲线。没有 user 手记输入与记录列表。 */
+.app-body--mood { gap: var(--sp-3); }
+
+/* 心情主卡：白底圆角 + 柔和投影，数字与描述语左右分栏 */
+.mood-hero {
+  padding: var(--sp-4);
+  border-radius: var(--r-lg);
+  background: var(--glass);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), var(--glass-top);
+}
+
+.mood-hero__top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--ink-3);
+}
+
+.mood-hero__trend {
+  font-family: var(--font-num);
+  letter-spacing: 0.06em;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+.mood-hero__main {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  margin-top: var(--sp-3);
+  min-width: 0;
+}
+
+.mood-hero__num {
+  flex: 0 0 auto;
+  font-family: var(--font-display);
+  font-size: 52px;
+  font-weight: 300;
+  line-height: 0.92;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.mood-hero__side { flex: 1 1 auto; min-width: 0; }
+
+.mood-hero__label {
+  font-family: var(--font-display);
+  font-size: 17px;
+  letter-spacing: 0.22em;
+  color: var(--ink);
+}
+
+.mood-hero__line {
+  margin-top: 6px;
+  font-size: 11.5px;
+  line-height: 1.7;
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+  word-break: break-word;
+}
+
+.mood-hero__track {
+  margin-top: var(--sp-4);
+  height: 6px;
+  border-radius: var(--r-pill);
+  background: var(--surface-3);
+  box-shadow: var(--in);
+  overflow: hidden;
+}
+
+.mood-hero__track i {
+  display: block;
+  height: 100%;
+  border-radius: var(--r-pill);
+  background: linear-gradient(90deg, var(--ink-4), var(--ink));
+  transition: width 0.7s var(--ease);
+}
+
+/* 五个心情状态：TA 此刻心情的展示位，点一下切换 */
+.mood__checkin {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--sp-2);
+}
+
+/* 纯展示：不是按钮，没有 :active / 悬停反馈，也不可点击 */
+.moodbtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: var(--sp-3) 2px var(--sp-2);
+  border-radius: var(--r-md);
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), var(--glass-top);
+  cursor: default;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  pointer-events: none;
+}
+
+.moodbtn i {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--glass-soft);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--in);
+  position: relative;
+  display: block;
+}
+
+.moodbtn i::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 9px;
+  height: 9px;
+  margin: -4.5px 0 0 -4.5px;
+  border-radius: 50%;
+  background: var(--ink-4);
+  transition: background var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+
+.moodbtn span {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+
+/* 当前心情：只靠实心圆点与深色文字区分，不做按钮式选中态 */
+.moodbtn.is-on {
+  background: var(--glass-strong);
+  box-shadow: var(--glass-shadow), var(--glass-top);
+}
+.moodbtn.is-on i::after { background: var(--ink); transform: scale(1.35); }
+.moodbtn.is-on span { color: var(--ink); }
+
+/* 数据卡片：2×2 紧凑网格，标签 + 单位 + 大数字 + 细进度 */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-2);
+}
+
+/* 四张卡片等高：标签行固定高度，数字行固定行高，进度条贴底对齐 */
+.stat {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: var(--sp-3);
+  border-radius: var(--r-md);
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), var(--glass-top);
+}
+
+.stat__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  min-height: 14px;
+}
+.stat__label {
+  font-size: 10px;
+  line-height: 14px;
+  letter-spacing: 0.14em;
+  color: var(--ink-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.stat__unit {
+  flex: 0 0 auto;
+  font-style: normal;
+  font-size: 9px;
+  line-height: 14px;
+  letter-spacing: 0.06em;
+  color: var(--ink-4);
+  font-family: var(--font-num);
+  white-space: nowrap;
+  text-align: right;
+}
+
+.stat__num {
+  display: block;
+  margin-top: 2px;
+  font-family: var(--font-num);
+  font-size: 21px;
+  font-weight: 500;
+  line-height: 26px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 进度条自动贴到卡片底部：四张卡片无论数字长短都对齐 */
+.stat__track {
+  margin-top: auto;
+  padding-top: var(--sp-2);
+  height: 4px;
+  border-radius: var(--r-pill);
+  background: var(--surface-3);
+  box-shadow: var(--in);
+  overflow: hidden;
+  box-sizing: content-box;
+}
+
+.stat__track i {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: var(--r-pill);
+  background: linear-gradient(90deg, var(--ink-4), var(--ink));
+  transition: width 0.7s var(--ease);
+}
+
+/* 近 7 日心情曲线：与数据卡片同一套白底圆角 */
+.spark {
+  padding: var(--sp-4);
+  border-radius: var(--r-lg);
+  background: var(--glass);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), var(--glass-top);
+}
+
+.spark__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  font-size: 10.5px;
+  letter-spacing: 0.2em;
+  color: var(--ink-3);
+}
+
+.spark__now {
+  font-family: var(--font-num);
+  letter-spacing: 0.06em;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+.spark svg {
+  display: block;
+  width: 100%;
+  height: 84px;
+  margin-top: var(--sp-3);
+  overflow: visible;
+}
+.spark svg .line { fill: none; stroke: var(--ink); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.spark svg .area { fill: rgba(22, 24, 27, 0.05); stroke: none; }
+.spark svg .pt { fill: var(--surface); stroke: var(--ink); stroke-width: 1.4; }
+.spark svg .pt.is-now { fill: var(--ink); stroke: var(--surface); stroke-width: 1.6; }
+.spark svg .axis { stroke: var(--line); stroke-width: 1; }
+.spark svg .axis--mid { stroke-dasharray: 3 5; }
+
+.spark__axis {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  color: var(--ink-4);
+}
+
+/* 窄屏：数字与状态按钮再收一档，保证不溢出、不留白 */
+@media (max-width: 360px) {
+  .mood-hero__num { font-size: 44px; }
+  .mood-hero__label { font-size: 15px; letter-spacing: 0.16em; }
+  .moodbtn { padding: var(--sp-2) 1px 6px; gap: 5px; }
+  .moodbtn i { width: 20px; height: 20px; }
+  .moodbtn i::after { width: 8px; height: 8px; margin: -4px 0 0 -4px; }
+  .moodbtn span { font-size: 9px; letter-spacing: 0.04em; }
+  .stat__num { font-size: 18px; }
+  .spark svg { height: 72px; }
+}
+
+/* 宽屏 / 横屏：数据卡片排成一行，曲线拉高一点 */
+@media (min-width: 560px) {
+  .stat-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .spark svg { height: 110px; }
+}
+
+/* ---------- 日程 ---------- */
+.daybar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-pill);
+  background: var(--glass-soft);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  font-size: 11.5px;
+  letter-spacing: 0.1em;
+  color: var(--ink-3);
+}
+
+.daybar b { font-family: var(--font-num); font-size: 15px; color: var(--ink); }
+.daybar__track { flex: 1 1 auto; height: 6px; border-radius: var(--r-pill); box-shadow: var(--in); overflow: hidden; }
+.daybar__track i { display: block; height: 100%; width: 0; background: var(--ink); border-radius: var(--r-pill); transition: width 0.6s var(--ease); }
+
+.tasks { display: flex; flex-direction: column; gap: var(--sp-2); }
+
+.task {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-md);
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), var(--glass-top);
+  animation: rise 0.28s var(--ease) both;
+}
+
+.task__check {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  margin-top: 2px;
+  border-radius: 50%;
+  background: var(--glass-soft);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--in);
+  position: relative;
+  transition: transform var(--dur-fast) var(--ease);
+}
+
+.task__check:active { transform: scale(0.9); }
+
+.task__check::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 12px;
+  width: 8px;
+  height: 4.5px;
+  border-left: 1.8px solid var(--ink);
+  border-bottom: 1.8px solid var(--ink);
+  transform: rotate(-45deg) scale(0);
+  transition: transform 0.24s var(--ease);
+}
+
+.task__body { flex: 1 1 auto; min-width: 0; }
+.task__title { font-size: 13.5px; line-height: 1.6; letter-spacing: 0.02em; }
+.task__meta { margin-top: 4px; font-size: 10px; letter-spacing: 0.14em; color: var(--ink-4); }
+
+.task__del {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--glass-soft);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  position: relative;
+  opacity: 0.8;
+}
+
+.task__del::before,
+.task__del::after {
+  content: "";
+  position: absolute;
+  left: 9px;
+  top: 14px;
+  width: 12px;
+  height: 1.6px;
+  background: var(--ink-2);
+}
+
+.task__del::before { transform: rotate(45deg); }
+.task__del::after { transform: rotate(-45deg); }
+.task__del:active { box-shadow: var(--in); }
+
+.task.is-done .task__check::after { transform: rotate(-45deg) scale(1); }
+.task.is-done .task__title { color: var(--ink-4); text-decoration: line-through; }
+
+/* ---------- 音乐 ---------- */
+.player {
+  padding: var(--sp-4);
+  border-radius: var(--r-xl);
+  background: var(--glass);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow-lg), var(--glass-top);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.player__art {
+  position: relative;
+  height: 168px;
+  border-radius: var(--r-lg);
+  background: linear-gradient(160deg, var(--surface-3), var(--surface-2));
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--in-deep);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.player__disc {
+  width: 118px;
+  height: 118px;
+  border-radius: 50%;
+  background: var(--glass-strong);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), var(--glass-top);
+  display: grid;
+  place-items: center;
+  position: relative;
+}
+
+.player__disc::before {
+  content: "";
+  position: absolute;
+  inset: 14px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+}
+
+.player__disc::after {
+  content: "";
+  position: absolute;
+  inset: 42px;
+  border-radius: 50%;
+  background: var(--ink);
+}
+
+.player__disc.is-spin { animation: spin 9s linear infinite; }
+
+.player__viz {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 46px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 3px;
+  padding: 0 var(--sp-4) var(--sp-2);
+}
+
+.player__viz i {
+  width: 3px;
+  height: 6px;
+  border-radius: var(--r-pill);
+  background: var(--ink-3);
+  transition: height 0.18s linear, opacity 0.18s linear;
+  opacity: 0.45;
+}
+
+.player__meta { text-align: center; }
+.player__meta p:first-child { font-size: 15px; letter-spacing: 0.1em; }
+.player__meta p:last-child { margin-top: 5px; font-size: 11px; letter-spacing: 0.16em; color: var(--ink-3); }
+
+.player__bar {
+  height: 8px;
+  border-radius: var(--r-pill);
+  box-shadow: var(--in);
+  position: relative;
+  cursor: pointer;
+}
+
+.player__bar i {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  border-radius: var(--r-pill);
+  background: var(--ink);
+}
+
+.player__bar b {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  border-radius: 50%;
+  background: var(--glass-strong);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+  transition: transform var(--dur-fast) var(--ease);
+}
+
+.player__bar:active b { transform: scale(1.18); }
+
+.player__times {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-num);
+  font-size: 10.5px;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+  margin-top: 7px;
+}
+
+.player__ctrls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-4);
+}
+
+.ctrl {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), var(--glass-top);
+  display: grid;
+  place-items: center;
+  position: relative;
+  transition: box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease),
+	background var(--dur-fast) var(--ease);
+}
+
+.ctrl:active {
+  box-shadow: var(--in);
+  background: var(--glass-soft);
+  transform: scale(0.95);
+}
+
+.ctrl--play {
+  width: 66px;
+  height: 66px;
+  background: var(--ink);
+  border-color: transparent;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+}
+
+.ctrl--play:active {
+  background: var(--ink-2);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+}
+
+.ctrl--play .ctrl__play::after { border-left-color: var(--surface); }
+.ctrl--play .ctrl__pause::before,
+.ctrl--play .ctrl__pause::after { background: var(--surface); }
+
+.ctrl__prev,
+.ctrl__next { width: 13px; height: 13px; border-left: 1.8px solid var(--ink); border-bottom: 1.8px solid var(--ink); }
+.ctrl__prev { transform: rotate(45deg) translate(-1px, 1px); }
+.ctrl__next { transform: rotate(-135deg) translate(-1px, 1px); }
+
+.ctrl__play,
+.ctrl__pause { position: relative; width: 20px; height: 22px; }
+
+.ctrl__play::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 0;
+  height: 0;
+  border-left: 15px solid var(--ink);
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+}
+
+.ctrl__pause::before,
+.ctrl__pause::after {
+  content: "";
+  position: absolute;
+  top: 1px;
+  width: 5px;
+  height: 20px;
+  border-radius: 2px;
+  background: var(--ink);
+}
+
+.ctrl__pause::before { left: 2px; }
+.ctrl__pause::after { right: 2px; }
+
+.player__note { text-align: center; font-size: 10px; letter-spacing: 0.14em; color: var(--ink-4); }
+
+.playlist { display: flex; flex-direction: column; gap: var(--sp-2); }
+
+.track {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  text-align: left;
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-md);
+  background: var(--glass-soft);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  transition: box-shadow var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+
+.track:active { box-shadow: var(--in); background: var(--surface-2); }
+.track__idx { font-family: var(--font-num); font-size: 11px; color: var(--ink-4); width: 18px; flex: 0 0 auto; }
+.track__body { flex: 1 1 auto; min-width: 0; }
+.track__body > span:first-child { display: block; font-size: 13px; letter-spacing: 0.04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.track__body > span:last-child { display: block; margin-top: 4px; font-size: 10px; letter-spacing: 0.14em; color: var(--ink-3); }
+.track__dur { font-family: var(--font-num); font-size: 11px; color: var(--ink-3); flex: 0 0 auto; }
+.track.is-on {
+  background: var(--glass-strong);
+  box-shadow: var(--in);
+}
+.track.is-on .track__body > span:first-child { letter-spacing: 0.08em; }
+
+/* ---------- 记忆 ---------- */
+.mem-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-3);
+}
+
+.memcard {
+  text-align: left;
+  border-radius: var(--r-md);
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), var(--glass-top);
+  overflow: hidden;
+  transition: box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+
+.memcard:active {
+  box-shadow: var(--in);
+  transform: scale(0.98);
+}
+
+.memcard__art {
+  display: block;
+  height: 96px;
+  position: relative;
+  background: linear-gradient(158deg, var(--surface-2), var(--surface-3));
+  border-bottom: 1px solid var(--glass-border);
+  box-shadow: inset 0 0 22px rgba(18, 20, 24, 0.07);
+  overflow: hidden;
+}
+
+.memcard__art i {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at 36% 32%, rgba(255, 255, 255, 0.85), rgba(20, 22, 26, 0.55) 74%);
+}
+
+[data-theme="dark"] .memcard__art i {
+  background: radial-gradient(circle at 36% 32%, rgba(255, 255, 255, 0.3), rgba(0, 0, 0, 0.85) 74%);
+}
+
+.memcard__art em {
+  position: absolute;
+  left: var(--x, 30%);
+  top: var(--y, 40%);
+  width: 58%;
+  height: 58%;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+}
+
+.memcard__body { display: block; padding: var(--sp-3) var(--sp-3) var(--sp-4); }
+.memcard__body > span:first-child { display: block; font-size: 12.5px; letter-spacing: 0.06em; }
+.memcard__body > span:last-child { display: block; margin-top: 5px; font-size: 9.5px; letter-spacing: 0.14em; color: var(--ink-4); font-family: var(--font-num); }
+
+.memdetail {
+  padding: var(--sp-4);
+  border-radius: var(--r-lg);
+  background: var(--glass);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), var(--glass-top);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  animation: rise 0.3s var(--ease) both;
+}
+
+.memdetail__head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-3); }
+.memdetail__head p:first-child { font-size: 14px; letter-spacing: 0.12em; }
+.memdetail__head span { font-size: 10px; letter-spacing: 0.14em; color: var(--ink-4); font-family: var(--font-num); }
+.memdetail p.memdetail__text { font-size: 13px; line-height: 1.85; color: var(--ink-2); }
+.memdetail__tags { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+
+.tag {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  padding: 5px 11px;
+  border-radius: var(--r-pill);
+  background: var(--glass-soft);
+  border: 1px solid var(--glass-border);
+  color: var(--ink-3);
+}
+
+/* ---------- 设置 ---------- */
+.set-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--r-lg);
+  background: var(--glass);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), var(--glass-top);
+}
+
+.set-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-height: 56px;
+  padding: var(--sp-2) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.set-group .set-row:last-child { border-bottom: 0; }
+
+/* 聊天气泡样式：四个选项沿用 .seg / .seg__btn 外观，窄屏下换行成两行，避免文字挤压 */
+.seg--bubble {
+  flex-wrap: wrap;
+  row-gap: 6px;
+}
+.seg--bubble .seg__btn {
+  flex: 1 1 calc(50% - 4px);
+  min-width: 0;
+}
+
+.set-row__label { flex: 1 1 auto; min-width: 0; }
+.set-row__label p:first-child { font-size: 13px; letter-spacing: 0.06em; }
+.set-row__label p:last-child { margin-top: 4px; font-size: 10.5px; letter-spacing: 0.08em; color: var(--ink-4); line-height: 1.6; }
+
+/* ---------- 设置页标题字体统一（细体 + 字间距） ----------
+   只统一字体家族、粗细与字间距，字号一律沿用原有规则：
+   主标题「设置」仍是顶栏的 15.5px，卡片一级标题仍是 13px / 14.5px，
+   视觉层级不变；副标题与说明文字（p:last-child / .set-row__d）不在此列。
+   行高显式写成无单位倍数，细体字形不会把行盒撑高，
+   顶栏与卡片行内的垂直居中、上下边距保持原样。 */
+.app-head__title p:first-child,
+.set-row__label p:first-child,
+.set-row__t {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+  font-weight: 300;
+  letter-spacing: 0.5px;
+  line-height: 1.3;
+}
+
+.switch {
+  flex: 0 0 auto;
+  width: 52px;
+  height: 30px;
+  border-radius: var(--r-pill);
+  background: var(--glass-soft);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--in);
+  position: relative;
+  transition: box-shadow var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+
+.switch i {
+  position: absolute;
+  left: 4px;
+  top: 4px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--glass-strong);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+  transition: transform var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+
+.switch.is-on {
+  background: var(--surface-3);
+  box-shadow: var(--in-deep);
+}
+.switch.is-on i {
+  transform: translateX(22px);
+  background: var(--ink);
+  border-color: transparent;
+}
+
+.seg {
+  flex: 0 0 auto;
+  display: flex;
+  padding: 3px;
+  gap: 3px;
+  border-radius: var(--r-pill);
+  background: var(--glass-soft);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--in);
+}
+
+.seg__btn {
+  min-width: 52px;
+  height: 30px;
+  padding: 0 var(--sp-3);
+  border-radius: var(--r-pill);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--ink-3);
+  transition: box-shadow var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.seg__btn.is-on {
+  background: var(--glass-strong);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  color: var(--ink);
+}
+
+.set-note {
+  padding: 0 var(--sp-2);
+  font-size: 10.5px;
+  line-height: 1.85;
+  letter-spacing: 0.06em;
+  color: var(--ink-4);
+}
+
+.set-actions { display: flex; flex-direction: column; gap: var(--sp-3); }
+.set-actions .btn { width: 100%; }
+
+.about {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-5) var(--sp-4) var(--sp-4);
+  text-align: center;
+}
+
+.about p:first-child {
+  font-family: var(--font-display);
+  font-size: 12px;
+  letter-spacing: 0.34em;
+  color: var(--ink-2);
+}
+.about p:last-child { font-size: 10px; letter-spacing: 0.18em; color: var(--ink-4); font-family: var(--font-num); }
+
+/* ==========================================================================
+   聊天气泡多材质（需求指定的四套预设）
+   类名由 apps.js 的 applyBubbleStyle 按 localStorage('bubble_style') 加在
+   气泡 div（.msg__bubble）上：glass / gradient / dark，其余值一律 bubble-plain。
+   只写背景 / 描边 / 文字色，圆角与内边距仍用上面的基础规则。
+   ========================================================================== */
+
+/* 1. 极简纯白 */
+.bubble-plain {
+  background: #ffffff !important;
+  color: #333333 !important;
+  border: 1px solid #f0f0f0 !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important;
+}
+
+/* 2. 毛玻璃 */
+.bubble-glass {
+  background: rgba(255, 255, 255, 0.3) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+  color: #333333 !important;
+}
+
+/* 3. 柔和渐变 */
+.bubble-gradient {
+  background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%) !important;
+  color: #333333 !important;
+  border: none !important;
+}
+
+/* 4. 暗黑磨砂 */
+.bubble-dark {
+  background: rgba(40, 40, 40, 0.85) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* 气泡内的译文与「译」标签自带颜色，不跟随继承，否则深色磨砂上白字会变深字。 */
+.bubble-dark .msg__trans {
+  color: rgba(255, 255, 255, 0.72) !important;
+  border-top-color: rgba(255, 255, 255, 0.24) !important;
+}
+
+.bubble-dark .msg__trans__tag {
+  color: rgba(255, 255, 255, 0.85) !important;
+  background: rgba(255, 255, 255, 0.16) !important;
+}
+
+/* 纯白与渐变气泡表面是浅色的：深色主题下译文默认是浅色字，这里拉回深色。 */
+[data-theme="dark"] .bubble-plain .msg__trans,
+[data-theme="dark"] .bubble-gradient .msg__trans {
+  color: rgba(51, 51, 51, 0.7) !important;
+  border-top-color: rgba(51, 51, 51, 0.24) !important;
+}
+
+/* 呼吸光基础容器 */
+#emotion-ambient-light {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none; /* 不遮挡点击事件 */
+  z-index: 9998;
+  transition: all 1s ease;
+  opacity: 0;
+}
+
+/* 各种情绪的呼吸效果 */
+#emotion-ambient-light.emotion-happy {
+  box-shadow: inset 0 0 80px rgba(255, 182, 193, 0.6); /* 粉色呼吸 */
+  animation: breathe 3s infinite alternate;
+}
+#emotion-ambient-light.emotion-love {
+  box-shadow: inset 0 0 100px rgba(255, 105, 180, 0.7); /* 深粉/心动 */
+  animation: breathe 2s infinite alternate;
+}
+#emotion-ambient-light.emotion-sad {
+  box-shadow: inset 0 0 80px rgba(135, 206, 235, 0.6); /* 浅蓝色忧郁 */
+  animation: breathe 4s infinite alternate;
+}
+
+@keyframes breathe {
+  0% { opacity: 0.3; }
+  100% { opacity: 1; }
+}

@@ -1,0 +1,753 @@
+/* =====================================================================
+   Callia OS · keyboard.css
+   键盘安全层：聊天输入框聚焦时，整页不再被浏览器或系统整体上推。
+   · 文档级滚动锁：html / body 永远不滚动，导航栏与底部返回条留在屏幕原位
+   · 手机壳高度由 --kb-shell-h 驱动，默认严格等于可见视口
+   · html[data-kb] 由 keyboard.js 写入：on = 视口自行收缩 · pan = 系统整体上推
+   本文件必须最后引入，确保以上规则覆盖基础布局。
+   ===================================================================== */
+
+/* ---------- Flex 死框架：整页不可滚动，高度严格等于可视高度 ---------- */
+/* 根容器是纵向 Flex：顶栏 / 中间滚动区 / 底部栏依次排列，
+   页面本身没有任何可滚动区域，系统便没有把整页往上推的理由。
+   键盘弹起时外层高度被压缩，Flex 自动让底部输入区紧贴键盘上沿。 */
+html {
+  height: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+html body {
+  box-sizing: border-box;
+  height: 100%;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+/* 外壳与手机壳都只是 Flex 轨道，任何一层都不产生可被滚动的溢出 */
+.stage {
+  box-sizing: border-box;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 手机壳宽度必须严格等于屏幕宽度：
+   桌面浏览器里 .stage 是横向居中的 flex 容器，
+   如果 .device 只写 width:100% 而不限制最大宽度，
+   它会被内容撑得比屏幕还宽，右侧按钮就跑到视口外面去了。 */
+.device {
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  width: 100%;
+  max-width: 100%;
+  height: var(--kb-shell-h, 100%);
+  max-height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: height 0.18s var(--ease, ease);
+}
+
+/* 屏幕表面：唯一的纵向 Flex 主体，键盘压缩高度时它先变矮 */
+.screen {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 状态栏、底部返回条、Dock 与应用层一律钉在屏幕表面（.screen）上，
+   不再钉在浏览器视口上：屏幕变矮时它们跟着贴着键盘上沿，不会整体上浮。 */
+.statusbar,
+.homebar,
+.dock,
+.app-layer {
+  position: absolute !important;
+}
+
+/* ---------- 应用层：上中下三段 Flex（顶栏 / 滚动区 / 输入区） ---------- */
+/* 应用表面跟随屏幕高度收缩，内部只允许消息区自己滚动，
+   否则长聊天记录会把输入条顶出屏幕，看起来又像整页上浮。 */
+.app-screen {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 顶部导航栏：Flex 的第一个子元素，正常文档流，不用 fixed / sticky */
+.app-head {
+  position: static !important;
+  flex: 0 0 auto;
+  flex-shrink: 0;
+}
+
+/* 中间内容区：吃掉剩余高度，只有它自己滚动 */
+.app-body {
+  position: static !important;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 底部输入区 / 工具栏：Flex 的最后一个子元素，禁止被挤压 */
+.app-foot {
+  position: static !important;
+  flex: 0 0 auto;
+  flex-shrink: 0;
+}
+
+/* 输入框到屏幕的整条链路都不允许是 fixed / 定位容器 */
+.chat__chips,
+.chat__quick {
+  position: static !important;
+  flex: 0 0 auto;
+  flex-shrink: 0;
+}
+
+/* 快捷回复标签行（「今天有点累」等）按需求收起：DOM 节点、renderChips()
+   与 data-quick 点击委托全部保留，这里只做显示隐藏，不影响任何逻辑。 */
+.screen .chat__chips {
+  display: none;
+}
+
+.field {
+  min-width: 0;
+}
+
+/* ---------- 键盘态：把次要行收起，高度让给输入条 ---------- */
+html[data-kb] .chat__quick {
+  display: none;
+}
+
+/* ---------- 安全区适配（viewport-fit=cover）---------- */
+/* 页面始终运行在系统状态栏下方，不隐藏系统栏，只把内容从刘海 / 灵动岛 /
+   底部手势条让开。env() 在没有安全区的设备上恒为 0px，因此以下规则
+   对普通设备零副作用；有刘海与手势条的机型上内容不会再被遮挡。 */
+:root {
+  --sa-top: env(safe-area-inset-top, 0px);
+  --sa-bottom: env(safe-area-inset-bottom, 0px);
+  --sa-left: env(safe-area-inset-left, 0px);
+  --sa-right: env(safe-area-inset-right, 0px);
+
+  /* 顶部净空：safe-area + 40px 呼吸（需求指定值），并用 max() 兜底到 104px。
+     部分 Android WebView 的 env(safe-area-inset-top) 恒为 0，只靠 env() 计算
+     仍会把大字号时间留在挖孔 / 灵动岛里，因此保留一个足够高的最小净空。 */
+  --safe-hero-top: max(calc(var(--sa-top) + 40px), 104px);
+
+  /* 锁屏顶部：日期与大字号时间同样让开挖孔 / 灵动岛。 */
+  --safe-lock-top: max(calc(var(--sa-top) + 40px), 104px);
+
+  /* 底部净空：手势返回条 + 悬浮留白；env() 为 0 时同样浮在返回条上方。 */
+  --safe-dock-lift: max(calc(var(--sa-bottom) + 14px), 30px);
+
+  /* 底部导航栏（Dock）自身高度：44px 图标 + 上下各 8px 内边距 + 1px 顶边框。
+     主页滚动区的底部净空由它推导，导航栏改高时只需改这一处。 */
+  --dock-h: 61px;
+
+  /* 应用页顶部净空：只让开状态栏那一行（7px 上内边距 + 12px 字号行高 ≈ 23px），
+     不再额外叠加固定像素；env() 为 0 的机型用状态栏最小高度兜底。 */
+  --safe-app-top: max(calc(var(--sa-top) + 23px), var(--statusbar-h, 44px));
+}
+
+/* 顶部：状态栏自身已在 base.css 用 padding 计入 env(safe-area-inset-top)，
+   这里不再叠加 margin-top，避免重复下推后与灵动岛、桌面内容错位。
+   排版：时间死贴左侧，信号 / Wi-Fi / 电量死贴右上角，两者不再挤在一起。 */
+.screen .statusbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 0;
+  /* 右侧留白交给右侧容器自身，避免与下面的 padding-right 双重叠加 */
+  padding-right: 0;
+}
+
+/* 左侧时间区：不参与伸展，始终留在屏幕左上角 */
+.screen .statusbar .statusbar__zone--left {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+/* 右侧信号 / 电量区：margin-left:auto + space-between 双重保险，死贴右上角 */
+.screen .statusbar .statusbar__zone--right {
+  flex: 0 0 auto;
+  margin-left: auto;
+  padding-right: calc(env(safe-area-inset-right, 0px) + 16px);
+}
+
+/* 桌面与锁屏：屏幕表面（壁纸层）仍然铺满整块屏幕，不会出现留白色带。
+   桌面顶部让位交给下面的 .home__scroll，避免与 hero 净空重复累加。 */
+.home {
+  padding-top: 0;
+  padding-bottom: var(--sa-bottom);
+  padding-left: var(--sa-left);
+  padding-right: var(--sa-right);
+}
+
+.lock {
+  padding-top: var(--safe-lock-top);
+  padding-bottom: var(--sa-bottom);
+  padding-left: var(--sa-left);
+  padding-right: var(--sa-right);
+}
+
+/* 顶部：大字号时间（.hero__clock）与日期问候语（.hero__pill）所在容器
+   不再贴顶，整体下推到挖孔 / 灵动岛下方；选择器链高于 base.css 的页面规则，
+   保证窄屏媒体查询也不会把 padding-top 抢回去。 */
+.home .home__carousel .home__track .home__page .home__scroll {
+  padding-top: var(--safe-hero-top);
+  /* 底部：导航栏现在贴底全宽，滞动内容必须留出比它更高的净空，
+     最后一行图标与提示文字才不会被压住（.home 自身另有 safe-area 下边距）。
+     61px 导航栏 + 34px 呼吸 = 95px，大于导航栏高度。 */
+  padding-bottom: calc(var(--dock-h) + 34px);
+  box-sizing: border-box;
+}
+
+/* 顶部：问候区回到常规文档流，由容器 padding 统一让位，
+   防止历史绝对定位的 top 值把时间重新拉回挖孔区域。 */
+.home .hero {
+  position: relative;
+  top: auto;
+  left: auto;
+  right: auto;
+  width: auto;
+  margin-top: 0;
+}
+
+/* 应用层：顶栏 Header 与底部输入栏 Footer 都是 .app-screen 的 Flex 子元素，
+   容器内边距让 Header 落在状态栏下方、输入框落在手势条之上，
+   中间滚动区自动吸收剩余高度，输入框不会被返回条压住。 */
+.app-screen {
+  margin: 0;
+  border-radius: 0;
+  /* 顶部：只让开状态栏那一行，不再叠加多余的固定像素。
+     底部留白交给 .app-foot 自己的 padding-bottom，避免两处安全区双重累加。 */
+  padding-top: var(--safe-app-top);
+  padding-bottom: 0;
+  padding-left: var(--sa-left);
+  padding-right: var(--sa-right);
+}
+
+/* ---------- 聊天页顶栏与底栏：横向 100% 铺满，像正常聊天软件 ---------- */
+/* 应用层横向铺满屏幕：去掉左右内缩与圆角，顶栏 / 底栏的底色和分隔线
+   才能真的贴住屏幕左右边缘。纵向同样铺满整块屏幕（top / bottom 归零），
+   上下留白只由 .app-screen 与 .app-foot 负责，不再与基础层的偏移重复累加。 */
+.screen .app-layer {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  max-width: none;
+  height: auto;
+  margin: 0;
+  border-radius: 0;
+  /* 去掉基础层可能残留的卡片内边距与描边：它们会在应用表面四周
+     留出一圈“悬浮卡片”白边，顶栏与底栏永远贴不到屏幕边缘。 */
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+}
+
+/* 顶栏：无圆角、无左右外边距与内边距，背景与下沿分隔线整条铺满。 */
+.screen .app-screen .app-head {
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  border-radius: 0;
+  /* 紧凑顶栏：上内边距取需求指定的 10px，顶栏高度只由内容决定。 */
+  padding-top: 10px;
+  padding-right: 0;
+  padding-bottom: 8px;
+  padding-left: 0;
+  box-shadow: none;
+  background: var(--glass-strong);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+/* 顶栏内容自身保留左右呼吸，返回按钮与右侧入口不会贴住屏幕边缘。 */
+.screen .app-screen .app-head > .app-head__back {
+  margin-left: 14px;
+}
+.screen .app-screen .app-head > :last-child {
+  margin-right: 14px;
+}
+
+/* 聊天页顶栏（.app-head--chat）：完全透明，去掉背景、下边框与阴影，
+   聊天背景可以直接透到顶栏。只改外观，返回按钮、标题与右侧入口的结构
+   和上面的紧凑内边距规则全部沿用，布局不受影响。 */
+.screen .app-screen .app-head--chat {
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border-bottom: 0;
+  box-shadow: none;
+}
+
+/* 底栏：与顶栏同一套语言，平铺贴在屏幕底部，不再悬浮、不再有圆角。 */
+.screen .app-screen .app-foot {
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  border-radius: 0;
+  /* 紧凑底栏：输入框下方只保留系统安全区（env 为 0 的机型给 8px 最小呼吸），
+     不再叠加固定高度，底部大白边由此消除。 */
+  padding-top: 8px;
+  padding-right: 0;
+  padding-bottom: max(var(--sa-bottom), 8px);
+  padding-left: 0;
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  background: var(--glass-strong);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border-top: 1px solid var(--glass-border);
+}
+
+/* 输入框吃掉剩余宽度，发送按钮固定在一侧，两者同一行垂直居中。 */
+.screen .app-screen .app-foot > .field {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin-left: 14px;
+}
+.screen .app-screen .app-foot > .btn {
+  flex: 0 0 auto;
+  margin-right: 14px;
+}
+
+/* ---------- 底部导航栏（Dock）：贴底全宽，不再是悬浮圆角块 ---------- */
+/* 视觉效果等价于 position: fixed; bottom: 0; left: 0; width: 100%：本文件顶部已把
+   .dock 钉在 .screen 上，而 .screen 经 html / body / .stage / .device 的 100dvh
+   Flex 链严格等于可见视口，所以 bottom: 0 量到的就是屏幕底边。
+   刻意保留 absolute 而不是 fixed：软键盘弹起时 fixed 会让整条导航栏浮到键盘上方，
+   这正是本安全层要防的问题。 */
+.screen .dock {
+  box-sizing: border-box;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0;
+  margin: 0 !important;
+  transform: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  border: 0;
+  border-top: 1px solid var(--glass-border);
+  background: var(--glass-strong);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  padding: 8px 10px;
+  padding-left: calc(10px + var(--sa-left));
+  padding-right: calc(10px + var(--sa-right));
+  /* 只让开系统手势条，不再额外悬浮抬高 */
+  padding-bottom: calc(8px + var(--sa-bottom));
+}
+
+/* 四个图标在整条导航栏内等分：:not([hidden]) 让 hidden 时仍走基础层的
+   display: none，锁屏与应用内不会漏出来（os.js 的 syncDock 按 data-view 切换）。 */
+body[data-view="home"] .screen .dock:not([hidden]) {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.screen .dock .dock__item {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 底部悬浮导航栏只在桌面（Home）出现：路由状态由 body[data-view] 表示，
+   进入任何应用（含与伴侣的聊天页）时一律收起，聊天界面底部不再被压住。
+   display 兼作 JS 条件渲染的兜底，[hidden] 失效时也不会漏出来。 */
+body:not([data-view="home"]) .dock {
+  display: none !important;
+}
+
+/* 底部：返回条保留自身高度并额外让出手势区（取值与 base.css 一致，集中在此便于维护） */
+.homebar {
+  min-height: calc(var(--sa-bottom) + 28px);
+  padding-bottom: var(--sa-bottom);
+}
+
+/* ---------- 降级 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .device {
+    transition: none;
+  }
+}
+
+body[data-motion="off"] .device {
+  transition: none;
+}
+
+/* ---------- 聊天译文对比度：任何气泡材质与背景图上都清晰可读 ---------- */
+/* 译文（.msg__trans）原先按主题变量与气泡材质着色，取的都是 0.7 上下的浅灰；
+   毛玻璃气泡本身只有 rgba(255,255,255,.3) + blur，聊天背景图会直接透上来，
+   浅灰译文压在复杂背景上便糊成一片。这里只动译文这一块：
+   · 颜色改成深灰 #333（刻意不用纯黑，避免与原文对比过冲、显得刺眼）
+   · 叠一层极淡的白色投影，把字从背景图里「托」起来
+   · 与上方原文固定 6px 间距，字号收到 12px，比正文矮一档，层级仍然清楚
+   选择器带上 #chat-log 与 .msg__bubble，特异性 (1,3,1) 高于 apps.css 里按材质
+   着色的译文规则；本文件又是最后引入，因此四种材质下都一定生效。
+   （bubble-theme.css 目前并未在 index.html 中引入，所以修复写在真正生效的层。） */
+#chat-log .msg .msg__bubble .msg__trans,
+#chat-log .msg .msg__trans {
+  margin-top: 6px !important;
+  font-size: 12px !important;
+  line-height: 1.55;
+  color: #333333 !important;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+  border-top-color: rgba(51, 51, 51, 0.18);
+}
+
+/* 「译」标签跟随译文本体颜色，不再单独留一层浅灰，避免同一行出现两种清晰度。 */
+#chat-log .msg .msg__bubble .msg__trans__tag {
+  color: inherit;
+  opacity: 1;
+  text-shadow: inherit;
+}
+
+/* 深色表面自动反转：暗黑磨砂材质（.bubble-dark）与深色主题下的气泡底色都是暗的，
+   深灰译文会直接沉进背景，因此这两类表面上把译文换成浅灰 #e0e0e0，
+   投影同步换成黑色，托字方向跟着翻。 */
+html[data-theme="dark"] #chat-log .msg .msg__bubble .msg__trans,
+#chat-log .msg .msg__bubble.bubble-dark .msg__trans {
+  color: #e0e0e0 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.75);
+  border-top-color: rgba(255, 255, 255, 0.24);
+}
+
+/* ---------- 主页头像：外圈光球恢复呼吸、右下角加号徽标缩小内收 ---------- */
+/* 外圈光球（.orb__ring）：基础层是透明度闪烁，这里换成需求指定的「呼吸缩放」。
+   只动 transform / opacity，ease-in-out + alternate 平滑放大缩小，绝不使用 linear。
+   本文件最后引入，选择器又高于基础层，因此闪烁动画被完整替换。 */
+@keyframes breathe-slow {
+  0% { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(1.08); opacity: 0.9; }
+}
+
+/* 已经换上预设头像时，外圈同样呼吸，只是整体暗一档，不跟头像抢视线。 */
+@keyframes breathe-slow-dim {
+  0% { transform: scale(1); opacity: 0.22; }
+  100% { transform: scale(1.08); opacity: 0.4; }
+}
+
+.screen .orb .orb__ring {
+  animation: breathe-slow 3s ease-in-out infinite alternate !important;
+  will-change: transform, opacity;
+}
+
+.screen .orb.has-avatar .orb__ring {
+  animation: breathe-slow-dim 3s ease-in-out infinite alternate !important;
+}
+
+/* 定位上下文：徽标要钉在头像右下角，.orb 必须是定位父级；overflow 放开，
+   外溢 2px 的徽标才不会被头像圆形裁掉边缘。头像的圆形观感改由 .avatar-face
+   自身的 border-radius + object-fit 负责，裁切效果不变。 */
+.screen .orb {
+  position: relative !important;
+  overflow: visible !important;
+}
+
+.screen .orb .avatar-face {
+  border-radius: 50% !important;
+  object-fit: cover !important;
+}
+
+/* 右下角加号徽标：强制 24px 并钉死在头像右下角。
+   关键补充 position: absolute —— 基础层若不是绝对定位，浏览器会直接忽略
+   right / bottom，徽标就会留在 flex 居中的头像正中间（这正是此前只改
+   right / bottom 仍然居中、看起来「挡住球体」的根因）。
+   left / top 归 auto、transform 归零，清掉任何历史居中位移。 */
+.screen .orb .orb__edit {
+  position: absolute !important;
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px !important;
+  min-height: 24px !important;
+  right: -2px !important;
+  bottom: -2px !important;
+  left: auto !important;
+  top: auto !important;
+  z-index: 10 !important;
+  margin: 0 !important;
+  transform: none !important;
+  border-radius: 50% !important;
+  font-size: 14px !important;
+  line-height: 22px !important;
+}
+
+/* 加号由两条短横组成（基础层 10px），按 24px 徽标比例缩到 8px。
+   刻意不用 transform: scale(.7)：基础层的短横靠 transform: translate(-50%,-50%)
+   居中，scale 会顶掉这段居中位移，把加号推到徽标左上角。改为显式
+   left/top 50% + translate 居中，尺寸同样缩到约 0.7 倍，且无论基础层用哪套
+   定位方式都能稳定停在徽标正中。 */
+.screen .orb .orb__edit::before,
+.screen .orb .orb__edit::after {
+  position: absolute !important;
+  left: 50% !important;
+  top: 50% !important;
+  margin: 0 !important;
+  transform: translate(-50%, -50%) !important;
+}
+
+.screen .orb .orb__edit::before {
+  width: 8px !important;
+  height: 1.4px !important;
+}
+
+.screen .orb .orb__edit::after {
+  width: 1.4px !important;
+  height: 8px !important;
+}
+
+/* 降级：系统减弱动效或设置里关掉动效时，外圈静止不动。 */
+@media (prefers-reduced-motion: reduce) {
+  .screen .orb .orb__ring {
+    animation: none !important;
+  }
+}
+
+body[data-motion="off"] .screen .orb .orb__ring {
+  animation: none !important;
+}
+
+/* ---------- 主页光球外圈：彻底关闭闪烁，改为静止光晕 ---------- */
+/* 上面 breathe-slow / breathe-slow-dim 那套呼吸缩放 + 透明度变化，在手机上
+   仍然被看成刺眼的闪烁。这里按需求彻底关掉动画：
+   · animation: none —— 不再有任何周期性变化
+   · opacity: .6 —— 固定一档柔和透明度
+   · box-shadow —— 用一层静态白色发光取代动画，视觉上仍是「在发光」而不是在闪
+   · transform: none —— 清掉历史缩放位移，外圈尺寸回到基础层原样
+   选择器同时覆盖 has-avatar 变体（它的特异性 (0,4,0) 高于基础呼吸规则），
+   因此换过头像之后外圈同样静止。本规则位于文件末尾，同权重时后者胜出。 */
+.screen .orb .orb__ring,
+.screen .orb.has-avatar .orb__ring {
+  animation: none !important;
+  opacity: 0.6 !important;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.5) !important;
+  transform: none !important;
+  will-change: auto;
+}
+
+/* 外圈若还有伪元素层的扩散 / 闪烁动画，一并静止；只关动画，不删任何视觉样式。 */
+.screen .orb .orb__ring::before,
+.screen .orb .orb__ring::after {
+  animation: none !important;
+  transform: none !important;
+}
+
+/* ---------- 档案页头像：大白球里的预设 Emoji 头像层 ---------- */
+/* 档案页 .pf-face__orb 在 profile.css 里是 display:block 的纯 CSS 渐变球，
+   里面新增的 emoji 层需要居中，因此把球改成 flex 居中容器。
+   emoji 自身 pointer-events:none —— 点击全部交给外层 .pf-face 按钮，
+   避免文本层吃掉事件导致循环切换失灵。 */
+.screen .pf-face .pf-face__orb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.screen .pf-face .pf-face__emoji {
+  font-size: 30px;
+  line-height: 1;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.18));
+  -webkit-user-select: none;
+  user-select: none;
+  pointer-events: none;
+}
+
+@media (max-width: 380px) {
+  .screen .pf-face .pf-face__emoji {
+    font-size: 26px;
+  }
+}
+
+/* ---------- 锁屏页与主页中间黑球：去掉闪烁，改为平滑呼吸缩放 ---------- */
+/* 真实黑球不是外围那圈白环，而是球体内部那个深色 <span>：
+   · 主页 P2：base.css 的 .orb span —— animation: breathe 4.4s ... infinite
+   · 锁屏 P1：base.css 的 .lock__orb span —— animation: breathe 5s ... infinite
+   这两条 breathe 关键帧同时改变透明度，球体在手机上就是一明一暗地闪。
+   下面用 animation 简写整体替换：新动画只写 transform: scale()，
+   不含任何 opacity 关键帧；opacity: 1 !important 再把透明度钉死，
+   任何历史淡入淡出规则都无法让它变暗。
+   外圈 .orb__ring 保持上面已写好的静止状态，这里一行都不动。 */
+@keyframes breathe-black-core {
+  0% {
+    transform: scale(0.92); /* 缩小到 92% */
+  }
+  50% {
+    transform: scale(1.08); /* 放大到 108% */
+  }
+  100% {
+    transform: scale(0.92); /* 回到 92% */
+  }
+}
+
+/* 两个页面的黑球同时命中：.screen 是屏幕表面，.lock 是锁屏页容器。
+   选择器链特异性高于基础层的 .orb span / .lock__orb span，本文件又最后引入，
+   因此旧的透明度闪烁被完整覆盖，只剩平滑的放大缩小。 */
+.screen .orb > span,
+.screen .lock .lock__orb > span {
+  animation: breathe-black-core 3s ease-in-out infinite !important;
+  opacity: 1 !important; /* 绝对不闪烁 */
+  will-change: transform; /* 优化动画流畅度 */
+}
+
+/* 降级：系统减弱动效或设置里关掉动效时，黑球静止在原始尺寸。 */
+@media (prefers-reduced-motion: reduce) {
+  .screen .orb > span,
+  .screen .lock .lock__orb > span {
+    animation: none !important;
+    transform: none !important;
+  }
+}
+
+body[data-motion="off"] .screen .orb > span,
+body[data-motion="off"] .screen .lock .lock__orb > span {
+  animation: none !important;
+  transform: none !important;
+}
+
+/* ---------- 聊天页头像：左右各一个圆形头像，绝不挤压气泡 ---------- */
+/* 需求指定的头像基础尺寸：40px 正圆 + cover 裁切 + flex-shrink:0，
+   气泡再怎么长都抢不走头像的宽度。头像一律是独立 div + background-image，
+   不用 <img>，图片尺寸不一致也不会把布局撑坏。 */
+.chat-avatar {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  background-size: cover !important;
+  background-position: center !important;
+  flex-shrink: 0 !important;
+  margin: 0 10px !important;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background-color: #f0f0f0;
+}
+
+/* 确保气泡容器是 flex 布局，并且垂直对齐 */
+.msg__row {
+  display: flex !important;
+  align-items: flex-start !important;
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+/* 对齐方向 */
+.msg__row--user { justify-content: flex-end !important; }
+.msg__row--char { justify-content: flex-start !important; }
+
+/* 本项目的气泡行实际叫 .msg（TA 的是 .msg--ai，你的是 .msg--me），
+   和上面 .msg__row 同一套横向 Flex：头像与气泡并排、顶部对齐。
+   带 #chat-log 前缀、又在本文件（最后引入）里，因此能覆盖 apps.css
+   中 .msg 的纵向 Flex 和 .msg--me 的 align-items: flex-end。 */
+#chat-log .msg.msg--ai,
+#chat-log .msg.msg--me {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap;
+  align-items: flex-start !important;
+  gap: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 15px;
+}
+
+#chat-log .msg.msg--ai {
+  justify-content: flex-start !important;
+}
+
+#chat-log .msg.msg--me {
+  justify-content: flex-end !important;
+  align-items: flex-start !important;
+}
+
+/* 气泡 + 时间竖向一列：min-width:0 让长句在头像旁边正常折行；
+   最大宽度扣掉头像加左右 10px 外边距（40 + 20 = 60px），气泡不会被顶出屏幕。 */
+#chat-log .msg__stack {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  max-width: calc(100% - 62px);
+}
+
+#chat-log .msg--me .msg__stack {
+  align-items: flex-end;
+}
+
+/* 没存头像图片时，头像里是一个居中的默认 Emoji（TA 📖 / 你 👤），
+   底色由上面那条 #f0f0f0 浅色块兜住。 */
+#chat-log .chat-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  line-height: 1;
+  overflow: hidden;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 你的头像可以点（换一张）：点击由 apps.js 直接绑在每个头像 div 上，
+   并就地拦住冒泡，不会顺手把这句话引用进输入框。 */
+#chat-log .chat-avatar.user-avatar {
+  cursor: pointer;
+}
+
+#chat-log .chat-avatar.user-avatar:active {
+  transform: scale(0.92);
+}
+
+/* TA 的左侧头像也可以点：攒着没回的消息，点一下就立刻统一回复。
+   队列为空时 apps.js 直接返回，不发任何请求。 */
+#chat-log .chat-avatar.char-avatar {
+  cursor: pointer;
+}
+
+#chat-log .chat-avatar.char-avatar:active {
+  transform: scale(0.92);
+}
+
+/* 窄屏：头像与气泡都要留得下，头像左右呼吸收到 8px。 */
+@media (max-width: 360px) {
+  #chat-log .chat-avatar {
+    margin: 0 8px !important;
+  }
+
+  #chat-log .msg__stack {
+    max-width: calc(100% - 56px);
+  }
+}

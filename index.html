@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="zh-CN">
+ <head>
+  <meta charset="utf-8">
+  <!-- 视口宽度：强制按真实设备宽度排版，禁止被当成 980px 宽的桌面/平板页面 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#e9e9e7">
+  <title>Callia OS · 虚拟伴侣桌面</title>
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/apps.css">
+  <link rel="stylesheet" href="css/companion.css">
+  <link rel="stylesheet" href="css/widgets.css">
+  <link rel="stylesheet" href="css/profile.css">
+  <link rel="stylesheet" href="css/wallpaper.css">
+  <link rel="stylesheet" href="css/home-edit.css">
+  <link rel="stylesheet" href="css/home-widgets.css">
+  <link rel="stylesheet" href="css/home-pages.css">
+  <link rel="stylesheet" href="css/charhome.css">
+  <link rel="stylesheet" href="css/chatbg.css">
+  <link rel="stylesheet" href="css/bubble.css">
+  <!-- 隐藏互动「灵魂共鸣」特效层（摇一摇 / 双击聊天页顶部） -->
+  <link rel="stylesheet" href="css/resonance.css">
+  <!-- 亲密度里程碑「心跳同步」庆祝特效（光晕 / 红心 / 流光 / 祝贺台词） -->
+  <link rel="stylesheet" href="css/heartbeat.css">
+  <!-- 主题皮肤层：data-skin 背景 + data-glass 全局玻璃外观（莫兰迪色系），
+       必须排在组件样式之后，才能覆盖玻璃底色令牌 -->
+  <link rel="stylesheet" href="css/themes.css">
+  <!-- 键盘安全层必须最后引入：覆盖基础布局，禁止整页被键盘上推 -->
+  <link rel="stylesheet" href="css/keyboard.css">
+  <!-- 卡莉娅（Callia）AI 智能管家：独立页面样式，只作用于 #kalia-page 与九宫格 C 图标 -->
+  <link rel="stylesheet" href="css/kalia.css">
+ </head>
+ <body data-view="boot">
+  <main class="stage">
+   <div class="device">
+    <section class="screen" id="screen">
+     <!-- 灵动岛 -->
+     <div class="island" id="island" aria-hidden="true">
+      <p class="island__label" id="sb-label">Callia OS</p>
+      <i class="island__wave"><b></b><b></b><b></b></i>
+     </div>
+     <!-- 状态栏 -->
+     <header class="statusbar" id="statusbar">
+      <button class="statusbar__zone statusbar__zone--left" id="sb-left" type="button" aria-label="打开通知中心"><span class="statusbar__time" id="sb-time">--:--</span></button>
+      <div class="statusbar__zone statusbar__zone--right">
+       <span class="sig" aria-hidden="true"><i></i><i></i><i></i><i></i></span> <span class="wifi" aria-hidden="true"></span> <span class="battery" aria-hidden="true"><b id="sb-battery-level"></b></span> <span class="statusbar__pct" id="sb-battery">--%</span>
+      </div>
+     </header>
+     <!-- 启动 -->
+     <div class="boot" id="boot">
+      <div class="boot__orb">
+       <span></span>
+      </div>
+      <p class="boot__name">CALLIA OS</p>
+      <p class="boot__sub">正在唤醒你的伴侣</p>
+      <div class="boot__bar">
+       <i id="boot-bar"></i>
+      </div>
+     </div>
+     <!-- 锁屏 -->
+     <div class="lock" id="lock" hidden>
+      <p class="lock__date" id="lock-date">--</p>
+      <p class="lock__time" id="lock-time">--:--</p>
+      <div class="lock__orb" id="lock-orb">
+       <span></span><img class="avatar-face" id="lock-avatar" alt="" hidden>
+      </div>
+      <p class="lock__name" id="lock-name">LUMEN</p>
+      <p class="lock__mood" id="lock-mood">心情平稳</p>
+      <div class="lock__notifs" id="lock-notifs"></div>
+      <button class="lock__unlock" id="unlock" type="button" aria-label="上滑进入桌面"><span class="lock__handle" aria-hidden="true"></span> <span class="lock__unlock-text">上滑进入</span></button>
+     </div>
+     <!-- 桌面：双主屏横向轮播 -->
+     <div class="home" id="home" hidden>
+      <div class="home__carousel" id="home-carousel">
+       <div class="home__track" id="home-track">
+        <section class="home__page home__page--first is-active" data-page="first" role="group" aria-roledescription="主屏" aria-label="第一屏 · 伴侣">
+         <div class="home__scroll">
+          <header class="hero">
+           <p class="hero__clock" id="home-clock">--:--</p>
+           <div class="hero__pill">
+            <i class="ico ico--cal" data-icon="calendar" aria-hidden="true"></i> <span id="home-date">--</span> <span class="hero__sep" aria-hidden="true"></span> <span id="home-greeting">你好</span>
+           </div>
+           <!-- 今日数据强制刷新：清掉当天缓存后重新调用大模型生成（逻辑见 js/widgets.js 的 forceRefreshDaily） -->
+           <button class="hero__refresh" id="home-refresh" type="button" aria-label="清除缓存并重新生成今日数据" title="清除缓存并重新生成今日数据"><i class="hero__refresh-ico" aria-hidden="true"></i> <span class="hero__refresh-text">刷新</span></button>
+          </header>
+          <section class="card card--hero" id="widget-companion" data-widget="companion">
+           <div class="hero__stage">
+            <button class="orb orb--hero orb--calm" id="home-orb" type="button" data-open="profile" aria-label="查看伴侣主页"><span></span> <img class="avatar-face" id="home-avatar" alt="" hidden> <i class="orb__ring" aria-hidden="true"></i> <i class="orb__edit" aria-hidden="true"></i></button>
+            <div class="hero__identity">
+             <p class="hero__name" id="home-name">LUMEN</p>
+             <p class="hero__mood"><span class="mood-dial" id="home-mood-dial" aria-hidden="true"><i></i></span> <span class="mood-label" id="home-mood">平稳</span></p>
+            </div>
+           </div>
+           <div class="affinity">
+            <div class="affinity__top">
+             <span>亲密度</span> <span><b id="home-affinity">0</b> / <b id="home-affinity-max">52000</b> · Lv.<b id="home-level">0</b> / <b id="home-level-max">520</b></span>
+            </div>
+            <div class="affinity__track">
+             <i id="home-affinity-bar"></i>
+            </div>
+           </div>
+           <div class="companion__actions">
+            <button class="btn btn--solid" type="button" data-open="chat">开始对话</button>
+            <button class="btn" type="button" data-action="call">语音陪伴</button>
+           </div>
+          </section>
+          <!-- 第一屏严格只保留：时间 / 问候 / 伴侣卡片 / 底部导航。
+               功能 App 网格与花销、专注等小组件全部在第二屏，这里不再放任何入口。
+               拖拽排序只在各自网格内换位，不做任何绝对定位自由摆放。 -->
+         </div>
+        </section>
+        <section class="home__page home__page--life" data-page="life" role="group" aria-roledescription="主屏" aria-label="第二屏 · 功能">
+         <div class="home__scroll">
+          <!-- 功能 App 网格：整块从第一屏搬到第二屏。
+               图标永远留在 .appgrid 的 3 列网格里，长按后只在网格内交换位置并吸附到格位，
+               不会飞出网格、也不会盖住别的内容，逻辑见 js/homeLayout.js。 -->
+          <div class="appgrid" id="appgrid" data-widget="apps"></div>
+          <p class="home__hint" id="home-hint">左右轻扫切换主屏 · 长按图标可在网格内拖动排序</p>
+          <div class="bento" id="bento-life">
+           <p class="bento__empty" id="bento-empty" hidden>这一屏的小组件都收起来了
+            <button class="bento__empty-btn" type="button" data-wgt-lib="life">去组件库添加</button></p>
+           <article class="bento__tile tile--weather" data-widget="weather">
+            <div class="tile__head">
+             <span class="tile__label">天气</span> <span class="tile__tag" id="life-city">灰谷</span>
+            </div>
+            <p class="wx__temp num"><b id="wx-temp">17</b><span>°</span></p>
+            <p class="wx__text" id="wx-text">多云转晴</p>
+            <p class="wx__meta"><span id="wx-hilo">12° — 21°</span><i class="wx__sep" aria-hidden="true"></i><span id="wx-feel">体感 16°</span></p>
+            <div class="wx__curve" id="wx-curve" aria-hidden="true"></div>
+            <p class="tile__foot"><span id="wx-wind">风 2.4 m/s</span><span class="tile__pill" id="wx-aqi">空气优</span></p>
+           </article>
+           <button class="bento__tile tile--water" type="button" data-widget="water" data-life="water-add" onclick="openDrinkModal()" aria-label="记录饮水杯数"><span class="tile__label">饮水</span> <span class="tile__stat num"><b id="water-count"><span id="drink-current-val">3</span></b><i id="water-goal">/8</i></span> <span class="tile__track"><i id="water-bar"></i></span> <span class="tile__cue" aria-hidden="true">＋</span></button>
+           <button class="bento__tile tile--steps" type="button" data-widget="steps" data-life="steps-add" onclick="openStepsModal()" aria-label="记录步数"><span class="tile__label">步数</span> <span class="ring" id="steps-ring" aria-hidden="true"><b class="num" id="steps-value"><span id="steps-current-val">4820</span></b></span> <span class="tile__cue" aria-hidden="true">＋</span></button>
+           <article class="bento__tile tile--sleep" data-widget="sleep">
+            <div class="tile__head">
+             <span class="tile__label">昨晚睡眠</span> <span class="tile__tag" id="sleep-quality">质量 74</span>
+            </div>
+            <p class="tile__stat tile__stat--row num"><b id="sleep-hours">6.8</b><span>小时</span></p>
+            <div class="sleep__bar" id="sleep-phases" aria-hidden="true"></div>
+            <p class="tile__foot" id="sleep-time">23:42 入睡 · 06:26 醒来</p>
+           </article>
+           <article class="bento__tile tile--focus" data-widget="focus">
+            <div class="tile__head">
+             <span class="tile__label">专注</span> <span class="tile__tag"><b id="focus-sessions">1</b> 段</span>
+            </div>
+            <div class="focus__row">
+             <p class="focus__time num" id="focus-time">00:00</p>
+             <div class="focus__ctrl">
+              <button class="tile__btn tile__btn--solid" type="button" id="focus-toggle" data-life="focus-toggle">开始</button>
+              <button class="tile__btn" type="button" data-life="focus-reset">清空</button>
+             </div>
+            </div>
+            <div class="tile__track">
+             <i id="focus-bar"></i>
+            </div>
+           </article>
+           <article class="bento__tile tile--budget" data-widget="budget">
+            <div class="tile__head">
+             <span class="tile__label">本月花销</span> <span class="tile__tag" id="budget-left">余 1132</span>
+            </div>
+            <p class="tile__stat tile__stat--row num"><b id="budget-spent">1268</b><span id="budget-total">/ 2400</span></p>
+            <div class="budget__list" id="budget-items"></div>
+           </article>
+           <article class="bento__tile tile--habits" data-widget="habits">
+            <div class="tile__head">
+             <span class="tile__label">今日习惯</span> <span class="tile__tag" id="habit-count">1 / 4</span>
+            </div>
+            <div class="habit__list" id="habit-list"></div>
+           </article>
+           <article class="bento__tile tile--plan" data-widget="plan">
+            <div class="tile__head">
+             <span class="tile__label">今日安排</span>
+             <button class="tile__btn" type="button" data-open="schedule">全部</button>
+            </div>
+            <div class="tile__track">
+             <i id="today-bar"></i>
+            </div>
+            <p class="tile__foot" id="today-meta">—</p>
+            <div class="today__list" id="today-list"></div>
+           </article>
+           <div class="bento__tile tile--music" id="widget-now" data-widget="music" data-open="music" role="button" aria-label="打开音乐">
+            <span class="disc" id="now-disc" aria-hidden="true"><i></i></span> <span class="music__meta"> <span class="music__label" id="now-status">已暂停</span> <span class="music__title" id="now-title">灰度呼吸</span> <span class="music__artist" id="now-artist">LUMEN · Ambient</span> </span> <span class="bars" id="now-bars" aria-hidden="true"></span> <i class="tile__go" aria-hidden="true"></i>
+           </div>
+          </div>
+          <!-- 独立图片卡片：每张图是一个单独的卡片，不包在网格里 -->
+          <div class="photo-cards" id="photo-cards"></div>
+         </div>
+        </section>
+       </div>
+      </div>
+      <!-- 分页指示点：结构与新增屏按钮由 homePages.js 按屏数渲染 -->
+      <div class="pager" id="home-dots" role="tablist" aria-label="主屏分页"></div>
+     </div>
+     <!-- 应用层 -->
+     <div class="app-layer" id="app-layer" hidden>
+      <div class="app-screen" id="app-root" role="region" aria-label="应用界面"></div>
+     </div>
+     <!-- 语音陪伴浮层 -->
+     <div class="call" id="call-overlay" hidden>
+      <p class="call__label">语音陪伴</p>
+      <div class="call__orb" id="call-orb">
+       <span></span><img class="avatar-face" id="call-avatar" alt="" hidden>
+      </div>
+      <p class="call__name" id="call-name">LUMEN</p>
+      <p class="call__timer" id="call-timer">00:00</p>
+      <div class="call__wave" id="call-wave" aria-hidden="true"></div>
+      <p class="call__hint">模拟通话界面 · 不产生音频</p>
+      <button class="call__end" id="call-end" type="button" aria-label="结束语音陪伴">结束</button>
+     </div>
+     <!-- 通知中心 -->
+     <div class="notif" id="notif-center" hidden>
+      <div class="notif__mask" id="notif-mask"></div>
+      <div class="notif__panel">
+       <div class="notif__head">
+        <p>通知中心</p>
+        <button class="chip chip--ghost" id="notif-clear" type="button">全部清除</button>
+       </div>
+       <div class="notif__list" id="notif-list"></div>
+      </div>
+     </div>
+     <!-- 头像选择弹层 -->
+     <div class="sheet" id="avatar-sheet" hidden>
+      <div class="sheet__mask" id="avatar-mask"></div>
+      <div class="sheet__panel" role="dialog" aria-modal="true" aria-label="更换伴侣头像">
+       <div class="sheet__handle" aria-hidden="true"></div>
+       <div class="sheet__head">
+        <p>伴侣头像</p>
+        <button class="chip chip--ghost" id="avatar-reset" type="button">恢复光球</button>
+       </div>
+       <p class="sheet__hint">选一个温和的彩色形象，或从本机相册换一张照片（照片只会自动裁成方形，颜色保持原样）。</p>
+       <div class="avatar-grid" id="avatar-grid"></div>
+       <div class="sheet__foot">
+        <button class="btn" id="avatar-pick" type="button">从相册选择</button>
+        <button class="btn btn--solid" id="avatar-close" type="button">完成</button>
+       </div>
+       <input class="sheet__file" id="avatar-file" type="file" accept="image/*" hidden>
+      </div>
+     </div>
+     <!-- 桌面壁纸面板 -->
+     <div class="wp-sheet" id="wallpaper-sheet" hidden>
+      <div class="wp-sheet__mask" data-wp-close></div>
+      <div class="wp-sheet__panel" role="dialog" aria-modal="true" aria-label="更换桌面壁纸">
+       <div class="wp-sheet__handle" aria-hidden="true"></div>
+       <div class="wp-sheet__head">
+        <div class="wp-sheet__title">
+         <p>桌面壁纸</p>
+         <p id="wp-current">主题背景</p>
+        </div>
+        <button class="chip chip--ghost" type="button" data-bg-clear>换回主题</button>
+       </div>
+       <div class="wp-sheet__scroll">
+        <div class="wp-grid" id="wp-grid"></div>
+        <div class="wp-veil is-off" id="wp-veil">
+         <span class="wp-veil__label">遮罩</span>
+         <div class="seg wp-veil__seg" role="group" aria-label="壁纸遮罩浓度">
+          <button class="seg__btn" type="button" data-bg-dim="0" aria-pressed="false">清晰</button>
+          <button class="seg__btn" type="button" data-bg-dim="1" aria-pressed="false">柔和</button>
+          <button class="seg__btn" type="button" data-bg-dim="2" aria-pressed="false">沉浸</button>
+         </div>
+        </div>
+        <p class="wp-sheet__note" id="wp-note">桌面长按空白处，随时能再换一张。</p>
+       </div>
+       <div class="wp-sheet__foot">
+        <button class="btn" type="button" data-bg-pick>从相册选择</button>
+        <button class="btn btn--solid" type="button" data-wp-close>完成</button>
+       </div>
+       <input id="bg-file" type="file" accept="image/*" hidden>
+      </div>
+     </div>
+     <!-- 小组件库改为桌面就地小折叠（homePages + homeWidgets），不再占用底部弹层 -->
+     <!-- 桌面排列模式 -->
+     <div class="edit-bar" id="home-edit-bar" hidden>
+      <p class="edit-bar__text" id="edit-bar-text">按住图标在网格内拖动 · 松手吸附到格位</p>
+      <button class="edit-bar__btn" type="button" data-wgt-lib>组件库</button>
+      <button class="edit-bar__btn" type="button" data-edit-reset>恢复默认</button>
+      <button class="edit-bar__btn edit-bar__btn--solid" type="button" data-edit-done>完成</button>
+     </div>
+     <!-- Dock -->
+     <nav class="dock" id="dock" hidden aria-label="常用应用">
+      <button class="dock__item" type="button" data-open="chat" aria-label="伴侣"><i class="ico ico--chat"></i></button>
+      <button class="dock__item" type="button" data-open="mood" aria-label="心情"><i class="ico ico--mood"></i></button>
+      <button class="dock__item" type="button" data-open="music" aria-label="音乐"><i class="ico ico--music"></i></button>
+      <button class="dock__item" type="button" data-open="settings" aria-label="设置"><i class="ico ico--gear"></i></button>
+     </nav>
+     <div class="homebar" id="homebar" role="button" tabindex="0" aria-label="返回桌面">
+      <i></i>
+     </div>
+     <!-- 聊天背景选图：只在个人主页「聊天背景」分栏里被唤起 -->
+     <input id="cbg-file" type="file" accept="image/*" hidden>
+     <!-- 图片卡片小组件的文件选择框 -->
+     <input id="photo-file-input" type="file" accept="image/*" hidden>
+     <!-- 伴侣档案头像上传：档案页白球/黑钮调起它，读取与存本机见 js/profileApp.js。
+		     放在这里而不是档案页内部，是因为档案页每次重绘都会重建 DOM，常驻节点不会被一起销毁。 -->
+     <input type="file" id="avatar-upload" accept="image/*" style="display: none;"> <!-- 聊天页「你」的头像上传：点聊天页右侧那个圆形头像调起它，
+		     读取与存本机见 js/apps.js。同样常驻 body：聊天页每次重绘都会
+		     重建 DOM，头像气泡不会被一起销毁。 -->
+     <input type="file" id="user-avatar-upload" accept="image/*" style="display: none;">
+     <div class="toast" id="toast" role="status" aria-live="polite"></div>
+     <!-- 聊天气泡样式：静态底部弹窗，默认隐藏，交互见 js/bubbleStyle.js -->
+     <div class="bubble-modal" id="bubble-modal" style="display: none;">
+      <div class="bubble-modal__mask" data-bubble-close></div>
+      <div class="bubble-modal__panel" role="dialog" aria-modal="true" aria-label="选择气泡样式">
+       <div class="bubble-modal__handle" aria-hidden="true"></div>
+       <div class="bubble-modal__head">
+        <p class="bubble-modal__title">选择气泡样式</p>
+        <p class="bubble-modal__sub">只保存在这台设备上，随时可以再换</p>
+       </div>
+       <div class="bubble-modal__list">
+        <button class="bubble-opt" type="button" data-style="plain" aria-pressed="false"><i class="bubble-opt__demo" aria-hidden="true"></i> <span class="bubble-opt__text"> <span class="bubble-opt__name">极简白</span> <span class="bubble-opt__desc">干净白底，最省眼</span> </span> <i class="bubble-opt__check" aria-hidden="true"></i></button>
+        <button class="bubble-opt" type="button" data-style="glass" aria-pressed="false"><i class="bubble-opt__demo bubble-opt__demo--glass" aria-hidden="true"></i> <span class="bubble-opt__text"> <span class="bubble-opt__name">毛玻璃</span> <span class="bubble-opt__desc">半透明磨砂，浮在聊天背景上</span> </span> <i class="bubble-opt__check" aria-hidden="true"></i></button>
+        <button class="bubble-opt" type="button" data-style="gradient" aria-pressed="false"><i class="bubble-opt__demo bubble-opt__demo--gradient" aria-hidden="true"></i> <span class="bubble-opt__text"> <span class="bubble-opt__name">柔和渐变</span> <span class="bubble-opt__desc">淡彩渐变，语气更温柔</span> </span> <i class="bubble-opt__check" aria-hidden="true"></i></button>
+        <button class="bubble-opt" type="button" data-style="dark" aria-pressed="false"><i class="bubble-opt__demo bubble-opt__demo--dark" aria-hidden="true"></i> <span class="bubble-opt__text"> <span class="bubble-opt__name">暗黑质感</span> <span class="bubble-opt__desc">深色气泡，夜里更耐看</span> </span> <i class="bubble-opt__check" aria-hidden="true"></i></button>
+       </div>
+       <button class="bubble-modal__cancel" type="button" data-bubble-close>取消</button>
+       <p class="bubble-modal__note">选择后立即生效，仅存在本机 localStorage</p>
+      </div>
+     </div>
+     <!-- 我的档案（User Persona）：设置页只留一行入口，表单本体是 body 末尾的 #persona-modal 底部弹窗 -->
+    </section>
+   </div>
+  </main>
+  <!-- 情绪呼吸光：放在 body 最外层，类名由 js/apps.js 按最新一条消息的情绪切换 -->
+  <div id="emotion-ambient-light"></div>
+  <!-- 卡莉娅（Callia）AI 智能管家：全屏独立页面，默认隐藏。
+       显隐只靠 display，由 js/kalia.js 的 openKaliaPage / closeKaliaPage 控制，
+       放在 body 最外层，主页与应用层重绘都不会把它一起销毁。 -->
+  <div id="kalia-page" style="display: none;" aria-hidden="true">
+   <header class="kalia-nav">
+    <button class="kalia-nav__back" id="kalia-back" type="button" onclick="closeKaliaPage()" aria-label="返回主页">‹</button>
+    <p class="kalia-nav__title">卡莉娅管家</p>
+    <span class="kalia-nav__badge" aria-hidden="true">C</span>
+   </header>
+   <div id="kalia-chat-log" role="log" aria-live="polite" aria-label="卡莉娅聊天记录"></div>
+   <!-- 快捷提问：横向滑动的胶囊标签，文字写死，点击后交给 sendKaliaMessage() 走同一套发送逻辑 -->
+   <div class="kalia-quick" id="kalia-quick" role="group" aria-label="快捷提问">
+    <button class="kalia-chip" type="button" onclick="sendKaliaMessage('怎么填 API？')">怎么填 API？</button>
+    <button class="kalia-chip" type="button" onclick="sendKaliaMessage('纯手动留言板是啥？')">纯手动留言板是啥？</button>
+    <button class="kalia-chip" type="button" onclick="sendKaliaMessage('怎么换头像？')">怎么换头像？</button>
+    <button class="kalia-chip" type="button" onclick="sendKaliaMessage('你是谁？')">你是谁？</button>
+   </div>
+   <div class="kalia-composer">
+    <input id="kalia-input" type="text" autocomplete="off" maxlength="500" placeholder="和卡莉娅说点什么…" aria-label="输入消息">
+    <button class="kalia-send" type="button" onclick="sendKaliaMessage()">发送</button>
+   </div>
+  </div>
+  <!-- 个人档案底部弹窗：默认隐藏，开关只靠 display + transform，
+	   由 js/userPersona.js 的 openPersonaModal / closePersonaModal 控制，没有任何路由跳转。
+	   放在 body 最外层，设置页每次重绘都不会把它一起销毁。 -->
+  <div id="persona-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: flex-end;">
+   <div id="persona-sheet" role="dialog" aria-modal="true" aria-label="我的档案" style="background: #fff; width: 100%; border-radius: 20px 20px 0 0; padding: 20px; transform: translateY(100%); transition: transform 0.3s ease; box-sizing: border-box; max-height: 80vh; overflow-y: auto;">
+    <div style="width: 40px; height: 4px; background: #ddd; border-radius: 2px; margin: 0 auto 15px auto;"></div>
+    <h3 style="font-size: 18px; margin-bottom: 15px; font-weight: bold;">我的档案</h3>
+    <div style="margin-bottom: 12px;">
+     <div style="font-size: 13px; color: #666; margin-bottom: 6px;">我的昵称</div>
+     <input type="text" id="up-nickname" maxlength="12" autocomplete="off" placeholder="例如：Callia" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 15px; color: #222;">
+    </div>
+    <div style="margin-bottom: 12px;">
+     <div style="font-size: 13px; color: #666; margin-bottom: 6px;">我的性格/设定</div>
+     <textarea id="up-traits" placeholder="例如：傲娇、喜欢喝咖啡、有点社恐" style="width: 100%; height: 80px; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 15px; color: #222;"></textarea>
+    </div>
+    <div style="margin-bottom: 20px;">
+     <div style="font-size: 13px; color: #666; margin-bottom: 6px;">我们的关系</div>
+     <textarea id="up-relationship" placeholder="例如：你是我的专属伴侣，必须听我的" style="width: 100%; height: 80px; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 15px; color: #222;"></textarea>
+    </div>
+    <button id="save-persona-btn" type="button" style="width: 100%; padding: 12px; background: #333; color: #fff; border: none; border-radius: 10px; font-size: 16px; margin-bottom: 20px;">保存档案</button>
+   </div>
+  </div>
+  <!-- 睡眠 / 花销 / 天气 / 专注 / 习惯 / 安排 / 音乐 七个小组件弹窗的脚本，
+	   与饮水、步数同一套写法，放在 widgets.js 之后加载。 -->
+  <script src="js/sleepWidget.js"></script>
+  <script src="js/budgetWidget.js"></script>
+  <script src="js/weatherWidget.js"></script>
+  <script src="js/focusWidget.js"></script>
+  <script src="js/habitWidget.js"></script>
+  <script src="js/planWidget.js"></script>
+  <script src="js/musicWidget.js"></script>
+  <!-- 饮水编辑弹窗：只靠 display + transform 控制显隐，没有任何路由跳转，
+	   逻辑见 js/drinkWidget.js（openDrinkModal / closeDrinkModal / updateDrink / saveDrinkData）。
+	   放在 body 最外层，生活屏重绘不会把它一起销毁。 -->
+  <!-- 睡眠编辑弹窗：逻辑见 js/sleepWidget.js -->
+  <!-- 花销编辑弹窗：逻辑见 js/budgetWidget.js -->
+  <!-- 天气编辑弹窗：逻辑见 js/weatherWidget.js -->
+  <!-- 专注编辑弹窗：逻辑见 js/focusWidget.js -->
+  <!-- 习惯编辑弹窗：逻辑见 js/habitWidget.js -->
+  <!-- 安排编辑弹窗：逻辑见 js/planWidget.js -->
+  <!-- 音乐编辑弹窗：逻辑见 js/musicWidget.js -->
+  <div id="music-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: flex-end;">
+   <div id="music-sheet" style="width: 100%; background: #fff; border-radius: 20px 20px 0 0; padding: 18px 18px calc(18px + env(safe-area-inset-bottom)); transform: translateY(100%); transition: transform 0.3s ease;">
+    <p style="margin: 0 0 12px; font-size: 15px; font-weight: 600;">正在播放</p>
+    <div id="music-edit-list" style="max-height: 40vh; overflow-y: auto; margin-bottom: 16px;"></div>
+    <div style="display: flex; gap: 10px;">
+     <button type="button" onclick="closeMusicModal()" style="flex: 1; padding: 12px; border-radius: 12px; border: 1px solid #ddd; background: #f6f6f4; font-size: 14px;">取消</button>
+     <button id="music-play-toggle" type="button" onclick="toggleMusicPlay()" aria-pressed="false" style="flex: 1; padding: 12px; border-radius: 12px; border: 1px solid #ddd; background: #f6f6f4; font-size: 14px;">播放</button>
+     <button type="button" onclick="saveMusicData()" style="flex: 1; padding: 12px; border-radius: 12px; border: 0; background: #1d1d1f; color: #fff; font-size: 14px;">保存</button>
+    </div>
+   </div>
+  </div>
+  <div id="plan-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: flex-end;">
+   <div id="plan-sheet" style="width: 100%; background: #fff; border-radius: 20px 20px 0 0; padding: 18px 18px calc(18px + env(safe-area-inset-bottom)); transform: translateY(100%); transition: transform 0.3s ease;">
+    <p style="margin: 0 0 12px; font-size: 15px; font-weight: 600;">编辑今日安排</p>
+    <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+     <input id="plan-input" type="text" maxlength="24" placeholder="要做的一件事" style="flex: 1; min-width: 0; padding: 10px 12px; border: 1px solid #ddd; border-radius: 12px; font-size: 13px;">
+     <button type="button" onclick="addPlan()" style="padding: 10px 14px; border-radius: 12px; border: 0; background: #1d1d1f; color: #fff; font-size: 13px;">添加</button>
+    </div>
+    <div id="plan-edit-list" style="max-height: 40vh; overflow-y: auto; margin-bottom: 16px;"></div>
+    <div style="display: flex; gap: 10px;">
+     <button type="button" onclick="closePlanModal()" style="flex: 1; padding: 12px; border-radius: 12px; border: 1px solid #ddd; background: #f6f6f4; font-size: 14px;">取消</button>
+     <button type="button" onclick="savePlanData()" style="flex: 1; padding: 12px; border-radius: 12px; border: 0; background: #1d1d1f; color: #fff; font-size: 14px;">保存</button>
+    </div>
+   </div>
+  </div>
+  <div id="habit-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: flex-end;">
+   <div id="habit-sheet" style="width: 100%; background: #fff; border-radius: 20px 20px 0 0; padding: 18px 18px calc(18px + env(safe-area-inset-bottom)); transform: translateY(100%); transition: transform 0.3s ease;">
+    <p style="margin: 0 0 12px; font-size: 15px; font-weight: 600;">编辑今日习惯</p>
+    <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+     <input id="habit-input" type="text" maxlength="12" placeholder="新的打卡项" style="flex: 1; min-width: 0; padding: 10px 12px; border: 1px solid #ddd; border-radius: 12px; font-size: 13px;">
+     <button type="button" onclick="addHabit()" style="padding: 10px 14px; border-radius: 12px; border: 0; background: #1d1d1f; color: #fff; font-size: 13px;">添加</button>
+    </div>
+    <div id="habit-edit-list" style="max-height: 40vh; overflow-y: auto; margin-bottom: 16px;"></div>
+    <div style="display: flex; gap: 10px;">
+     <button type="button" onclick="closeHabitModal()" style="flex: 1; padding: 12px; border-radius: 12px; border: 1px solid #ddd; background: #f6f6f4; font-size: 14px;">取消</button>
+     <button type="button" onclick="saveHabitData()" style="flex: 1; padding: 12px; border-radius: 12px; border: 0; background: #1d1d1f; color: #fff; font-size: 14px;">保存</button>
+    </div>
+   </div>
+  </div>
+  <div id="focus-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: flex-end;">
+   <div id="focus-sheet" style="width: 100%; background: #fff; border-radius: 20px 20px 0 0; padding: 18px 18px calc(18px + env(safe-area-inset-bottom)); transform: translateY(100%); transition: transform 0.3s ease;">
+    <p style="margin: 0 0 12px; font-size: 15px; font-weight: 600;">记录专注</p>
+    <label style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 13px;"> <span>已完成（分钟）</span> <span style="display: flex; align-items: center; gap: 8px;"> 
+      <button type="button" onclick="updateFocus('minutes', -5)" aria-label="已完成减五分钟" style="width: 34px; height: 34px; border-radius: 10px; border: 1px solid #ddd; background: #f6f6f4;">−</button> 
+      <input id="focus-input-minutes" type="number" min="0" max="60" style="width: 64px; text-align: center; padding: 6px; border: 1px solid #ddd; border-radius: 10px;"> 
+      <button type="button" onclick="updateFocus('minutes', 5)" aria-label="已完成加五分钟" style="width: 34px; height: 34px; border-radius: 10px; border: 1px solid #ddd; background: #f6f6f4;">+</button> 
+     </span> </label> <label style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 13px;"> <span>目标（分钟）</span> <span style="display: flex; align-items: center; gap: 8px;"> 
+      <button type="button" onclick="updateFocus('goal', -5)" aria-label="目标减五分钟" style="width: 34px; height: 34px; border-radius: 10px; border: 1px solid #ddd; background: #f6f6f4;">−</button> 
+      <input id="focus-input-goal" type="number" min="5" max="60" style="width: 64px; text-align: center; padding: 6px; border: 1px solid #ddd; border-radius: 10px;"> 
+      <button type="button" onclick="updateFocus('goal', 5)" aria-label="目标加五分钟" style="width: 34px; height: 34px; border-radius: 10px; border: 1px solid #ddd; background: #f6f6f4;">+</button> 
+     </span> </label> <label style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; font-size: 13px;"> <span>专注段数</span> <span style="display: flex; align-items: center; gap: 8px;"> 
+      <button type="button" onclick="updateFocus('sessions', -1)" aria-label="段数减一" style="width: 34px; height: 34px; border-radius: 10px; border: 1px solid #ddd; background: #f6f6f4;">−</button> 
+      <input id="focus-input-sessions" type="number" min="0" max="40" style="width: 64px; text-align: center; padding: 6px; border: 1px solid #ddd; border-radius: 10px;"> 
+      <button type="button" onclick="updateFocus('sessions', 1)" aria-label="段数加一" style="width: 34px; height: 34px; border-radius: 10px; border: 1px solid #ddd; background: #f6f6f4;">+</button> 
+     </span> </label>
+    <div style="display: flex; gap: 10px;">
+     <button type="button" onclick="closeFocusModal()" style="flex: 1; padding: 12px; border-radius: 12px; border: 1px solid #ddd; background: #f6f6f4; font-size: 14px;">取消</button>
+     <button type="button" onclick="saveFocusData()" style="flex: 1; padding: 12px; border-radius: 12px; border: 0; background: #1d1d1f; color: #fff; font-size: 14px;">保存</button>
+    </div>
+   </div>
+  </div>
+  <div id="weather-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: flex-end;">
+   <div id="weather-sheet" style="width: 100%; background: #fff; border-radius: 20px 20px 0 0; padding: 18px 18px calc(18px + env(safe-area-inset-bottom)); transform: translateY(100%); transition: transform 0.3s ease;">
+    <p style="margin: 0 0 12px; font-size: 15px; font-weight: 600;">更新天气</p>
+    <label style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 13px;"> <span>城市</span> <input id="weather-input-city" type="text" maxlength="8" style="width: 140px; padding: 6px 10px; border: 1px solid #ddd; border-radius: 10px;"> </label> <label style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 13px;"> <span>当前温度（°C）</span> <span style="display: flex; align-items: center; gap: 8px;"> 
+      <button type="button" onclick="updateWeather('temp', -1)" aria-label="温度减一" style="width: 34px; height: 34px; border-radius: 10px; border: 1px solid #ddd; background: #f6f6f4;">−</button> 
+      <input id="weather-input-temp" type="number" min="-40" max="46" style="width: 64px; text-align: center; padding: 6px; border: 1px solid #ddd; border-radius: 10px;"> 
+      <button type="button" onclick="updateWeather('temp', 1)" aria-label="温度加一" style="width: 34px; height: 34px; border-radius: 10px; border: 1px solid #ddd; background: #f6f6f4;">+</button> 
+     </span> </label> <label style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 13px;"> <span>天气</span> <span style="display: flex; align-items: center; gap: 8px;"> <input id="weather-input-text" type="text" maxlength="8" style="width: 110px; padding: 6px 10px; border: 1px solid #ddd; border-radius: 10px;"> 
+      <button type="button" onclick="cycleWeatherText()" aria-label="切换天气" style="padding: 6px 10px; border-radius: 10px; border: 1px solid #ddd; background: #f6f6f4; font-size: 12px;">换一个</button> </span> </label> <label style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 13px;"> <span>最高温</span> <input id="weather-input-hi" type="number" min="-40" max="48" style="width: 64px; text-align: center; padding: 6px; border: 1px solid #ddd; border-radius: 10px;"> </label> <label style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; font-size: 13px;"> <span>最低温</span> <input id="weather-input-lo" type="number" min="-40" max="48" style="width: 64px; text-align: center; padding: 6px; border: 1px solid #ddd; border-radius: 10px;"> </label>
+    <div style="display: flex; gap: 10px;">
+     <button type="button" onclick="closeWeatherModal()" style="flex: 1; padding: 12px; border-radius: 12px; border: 1px solid #ddd; background: #f6f6f4; font-size: 14px;">取消</button>
+     <button type="button" onclick="saveWeatherData()" style="flex: 1; padding: 12px; border-radius: 12px; border: 0; background: #1d1d1f; color: #fff; font-size: 14px;">保存</button>
+    </div>
+   </div>
+  </div>
+  <div id="budget-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: flex-end;">
+   <div id="budget-sheet" style="width: 100%; background: #fff; border-radius: 20px 20px 0 0; padding: 18px 18px calc(18px + env(safe-area-inset-bottom)); transform: translateY(100%); transition: transform 0.3s ease;">
+    <p style="margin: 0 0 12px; font-size: 15px; font-weight: 600;">记录本月花销</p>
+    <label style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 13px;"> <span>已花（元）</span> <span style="display: flex; align-items: center; gap: 8px;"> 
+      <button type="button" onclick="updateBudget('spent', -50)" aria-label="已花减五十" style="width: 34px; height: 34px; border-radius: 10px; border: 1px solid #ddd; background: #f6f6f4;">−</button> 
+      <input id="budget-input-spent" type="number" min="0" style="width: 84px; text-align: center; padding: 6px; border: 1px solid #ddd; border-radius: 10px;"> 
+      <button type="button" onclick="updateBudget('spent', 50)" aria-label="已花加五十" style="width: 34px; height: 34px; border-radius: 10px; border: 1px solid #ddd; background: #f6f6f4;">+</button> 
+     </span> </label> <label style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; font-size: 13px;"> <span>预算（元）</span> <span style="display: flex; align-items: center; gap: 8px;"> 
+      <button type="button" onclick="updateBudget('total', -100)" aria-label="预算减一百" style="width: 34px; height: 34px; border-radius: 10px; border: 1px solid #ddd; background: #f6f6f4;">−</button> 
+      <input id="budget-input-total" type="number" min="100" style="width: 84px; text-align: center; padding: 6px; border: 1px solid #ddd; border-radius: 10px;"> 
+      <button type="button" onclick="updateBudget('total', 100)" aria-label="预算加一百" style="width: 34px; height: 34px; border-radius: 10px; border: 1px solid #ddd; background: #f6f6f4;">+</button> 
+     </span> </label>
+    <div style="display: flex; gap: 10px;">
+     <button type="button" onclick="closeBudgetModal()" style="flex: 1; padding: 12px; border-radius: 12px; border: 1px solid #ddd; background: #f6f6f4; font-size: 14px;">取消</button>
+     <button type="button" onclick="saveBudgetData()" style="flex: 1; padding: 12px; border-radius: 12px; border: 0; background: #1d1d1f; color: #fff; font-size: 14px;">保存</button>
+    </div>
+   </div>
+  </div>
+  <div id="sleep-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: flex-end;">
+   <div id="sleep-sheet" style="width: 100%; background: #fff; border-radius: 20px 20px 0 0; padding: 18px 18px calc(18px + env(safe-area-inset-bottom)); transform: translateY(100%); transition: transform 0.3s ease;">
+    <p style="margin: 0 0 12px; font-size: 15px; font-weight: 600;">记录昨晚睡眠</p>
+    <label style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 13px;"> <span>睡眠时长（小时）</span> <span style="display: flex; align-items: center; gap: 8px;"> 
+      <button type="button" onclick="updateSleep('hours', -0.5)" aria-label="时长减半小时" style="width: 34px; height: 34px; border-radius: 10px; border: 1px solid #ddd; background: #f6f6f4;">−</button> 
+      <input id="sleep-input-hours" type="number" step="0.1" min="0" max="14" style="width: 64px; text-align: center; padding: 6px; border: 1px solid #ddd; border-radius: 10px;"> 
+      <button type="button" onclick="updateSleep('hours', 0.5)" aria-label="时长加半小时" style="width: 34px; height: 34px; border-radius: 10px; border: 1px solid #ddd; background: #f6f6f4;">+</button> 
+     </span> </label> <label style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 13px;"> <span>睡眠质量（0-100）</span> <span style="display: flex; align-items: center; gap: 8px;"> 
+      <button type="button" onclick="updateSleep('quality', -5)" aria-label="质量减五" style="width: 34px; height: 34px; border-radius: 10px; border: 1px solid #ddd; background: #f6f6f4;">−</button> 
+      <input id="sleep-input-quality" type="number" min="0" max="100" style="width: 64px; text-align: center; padding: 6px; border: 1px solid #ddd; border-radius: 10px;"> 
+      <button type="button" onclick="updateSleep('quality', 5)" aria-label="质量加五" style="width: 34px; height: 34px; border-radius: 10px; border: 1px solid #ddd; background: #f6f6f4;">+</button> 
+     </span> </label> <label style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 13px;"> <span>入睡时间</span> <input id="sleep-input-bed" type="time" style="padding: 6px 10px; border: 1px solid #ddd; border-radius: 10px;"> </label> <label style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; font-size: 13px;"> <span>醒来时间</span> <input id="sleep-input-wake" type="time" style="padding: 6px 10px; border: 1px solid #ddd; border-radius: 10px;"> </label>
+    <div style="display: flex; gap: 10px;">
+     <button type="button" onclick="closeSleepModal()" style="flex: 1; padding: 12px; border-radius: 12px; border: 1px solid #ddd; background: #f6f6f4; font-size: 14px;">取消</button>
+     <button type="button" onclick="saveSleepData()" style="flex: 1; padding: 12px; border-radius: 12px; border: 0; background: #1d1d1f; color: #fff; font-size: 14px;">保存</button>
+    </div>
+   </div>
+  </div>
+  <div id="drink-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: flex-end;">
+   <div id="drink-sheet" role="dialog" aria-modal="true" aria-label="记录饮水" style="background: #fff; width: 100%; border-radius: 20px 20px 0 0; padding: 20px; padding-bottom: calc(20px + env(safe-area-inset-bottom)); transform: translateY(100%); transition: transform 0.3s ease; box-sizing: border-box; max-width: 100%; overflow: hidden;">
+    <div style="width: 40px; height: 4px; background: #ddd; border-radius: 2px; margin: 0 auto 15px auto;"></div>
+    <h3 style="font-size: 18px; margin: 0 0 15px 0; font-weight: bold; color: #222;">记录饮水</h3>
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px;">
+     <button type="button" onclick="updateDrink(-1)" aria-label="减少一杯" style="flex: 0 0 auto; width: 50px; height: 50px; border-radius: 50%; border: 1px solid #ddd; background: #fff; font-size: 24px; line-height: 1; color: #333;">-</button>
+     <input type="number" id="drink-input" inputmode="numeric" min="0" max="8" step="1" aria-label="饮水杯数" style="flex: 1 1 auto; min-width: 0; width: 80px; max-width: 120px; margin: 0 auto; text-align: center; font-size: 32px; border: none; font-weight: bold; color: #222; background: transparent; box-sizing: border-box;">
+     <button type="button" onclick="updateDrink(1)" aria-label="增加一杯" style="flex: 0 0 auto; width: 50px; height: 50px; border-radius: 50%; border: 1px solid #ddd; background: #fff; font-size: 24px; line-height: 1; color: #333;">+</button>
+    </div>
+    <button type="button" onclick="saveDrinkData()" style="width: 100%; padding: 12px; background: #333; color: #fff; border: none; border-radius: 10px; font-size: 16px;">保存记录</button>
+   </div>
+  </div>
+  <!-- 步数编辑弹窗：与饮水弹窗同一套结构，只靠 display + transform 控制显隐，没有任何路由跳转，
+	   逻辑见 js/stepsWidget.js（openStepsModal / closeStepsModal / updateSteps / saveStepsData）。
+	   放在 body 最外层，生活屏重绘不会把它一起销毁。 -->
+  <div id="steps-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: flex-end;">
+   <div id="steps-sheet" role="dialog" aria-modal="true" aria-label="记录步数" style="background: #fff; width: 100%; border-radius: 20px 20px 0 0; padding: 20px; padding-bottom: calc(20px + env(safe-area-inset-bottom)); transform: translateY(100%); transition: transform 0.3s ease; box-sizing: border-box; max-width: 100%; overflow: hidden;">
+    <div style="width: 40px; height: 4px; background: #ddd; border-radius: 2px; margin: 0 auto 15px auto;"></div>
+    <h3 style="font-size: 18px; margin: 0 0 4px 0; font-weight: bold; color: #222;">记录步数</h3>
+    <p style="font-size: 13px; color: #888; margin: 0 0 15px 0;">今日目标 <span id="steps-goal">/ 8000</span> 步</p>
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px;">
+     <button type="button" onclick="updateSteps(-500)" aria-label="减少 500 步" style="flex: 0 0 auto; width: 50px; height: 50px; border-radius: 50%; border: 1px solid #ddd; background: #fff; font-size: 24px; line-height: 1; color: #333;">-</button>
+     <input type="number" id="steps-input" inputmode="numeric" min="0" max="60000" step="100" aria-label="步数" style="flex: 1 1 auto; min-width: 0; width: 80px; max-width: 160px; margin: 0 auto; text-align: center; font-size: 32px; border: none; font-weight: bold; color: #222; background: transparent; box-sizing: border-box;">
+     <button type="button" onclick="updateSteps(500)" aria-label="增加 500 步" style="flex: 0 0 auto; width: 50px; height: 50px; border-radius: 50%; border: 1px solid #ddd; background: #fff; font-size: 24px; line-height: 1; color: #333;">+</button>
+    </div>
+    <button type="button" onclick="saveStepsData()" style="width: 100%; padding: 12px; background: #333; color: #fff; border: none; border-radius: 10px; font-size: 16px;">保存记录</button>
+   </div>
+  </div>
+  <script src="js/keyboard.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/docs.js"></script>
+  <script src="js/persona.js"></script>
+  <script src="js/learn.js"></script>
+  <script src="js/companion.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/presence.js"></script>
+  <script src="js/apps.js"></script>
+  <script src="js/apps2.js"></script>
+  <script src="js/bubbleStyle.js"></script>
+  <!-- 我的档案（User Persona）：只读写本机 localStorage，不碰任何接口 -->
+  <script src="js/userPersona.js"></script>
+  <script src="js/profileApp.js"></script>
+  <script src="js/charHome.js"></script>
+  <script src="js/chatBg.js"></script>
+  <script src="js/chatQuote.js"></script>
+  <script src="js/avatar.js"></script>
+  <script src="js/widgets.js"></script>
+  <!-- 离线梦境日记：离开超过 2 小时回主页时生成一篇，填进 #offline-diary-card -->
+  <script src="js/offlineDiary.js"></script>
+  <!-- 饮水小组件的数据编辑：只读写本机 localStorage，不碰其他小组件 -->
+  <script src="js/drinkWidget.js"></script>
+  <!-- 步数小组件的数据编辑：同样只读写本机 localStorage，不碰其他小组件 -->
+  <script src="js/stepsWidget.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/homePages.js"></script>
+  <script src="js/homeLayout.js"></script>
+  <script src="js/homeWidgets.js"></script>
+  <script src="js/photoWidget.js"></script>
+  <script src="js/os.js"></script>
+  <!-- 心跳同步：亲密度每净增 50 点触发一次庆祝特效，由 os.js 的 refreshHome 调用 -->
+  <script src="js/heartbeat.js"></script>
+  <script src="js/resonance.js"></script>
+  <!-- 卡莉娅（Callia）AI 智能管家：完全独立的界面、数据与接口逻辑，
+       不读写主聊天的 store.chat，也不经过 COS.api。 -->
+  <script src="js/kalia.js"></script>
+ </body>
+</html>

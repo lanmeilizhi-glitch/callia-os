@@ -1,0 +1,1034 @@
+/* ==========================================================================
+   Callia OS · charhome.css
+   聊天页右上角「个人主页」：资料卡 + 朋友圈 + 可搜索的聊天记录
+   灰阶拟态 / 毛玻璃，与伴侣档案页共用同一套观感
+   ========================================================================== */
+
+/* ---------- 聊天页右上角入口 ---------- */
+.chat__home {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 34px;
+  margin-left: auto;
+  padding: 0 12px 0 10px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(22, 24, 27, 0.055);
+  box-shadow:
+    inset 0 1px 2px rgba(22, 24, 27, 0.05),
+    0 1px 0 rgba(255, 255, 255, 0.7);
+  color: rgba(22, 24, 27, 0.72);
+  font: inherit;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.18s var(--ease, ease), transform 0.18s var(--ease, ease);
+}
+
+.chat__home i {
+  position: relative;
+  flex: 0 0 auto;
+  width: 15px;
+  height: 15px;
+}
+
+.chat__home i::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 0;
+  width: 7px;
+  height: 7px;
+  border: 1.4px solid currentColor;
+  border-radius: 50%;
+}
+
+.chat__home i::after {
+  content: "";
+  position: absolute;
+  left: 1px;
+  bottom: 0;
+  width: 13px;
+  height: 7px;
+  border: 1.4px solid currentColor;
+  border-bottom: 0;
+  border-radius: 7px 7px 0 0;
+}
+
+.chat__home:active {
+  transform: scale(0.965);
+  background: rgba(22, 24, 27, 0.09);
+}
+
+.chat__home:focus-visible {
+  outline: 2px solid rgba(22, 24, 27, 0.55);
+  outline-offset: 2px;
+}
+
+[data-theme="dark"] .chat__home {
+  background: rgba(243, 244, 246, 0.08);
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.4),
+    0 1px 0 rgba(255, 255, 255, 0.05);
+  color: rgba(243, 244, 246, 0.76);
+}
+
+[data-theme="dark"] .chat__home:active {
+  background: rgba(243, 244, 246, 0.14);
+}
+
+/* 聊天页头部：标题过长时收缩，保证右上角入口不被挤出 */
+.app-head--chat .app-head__back {
+  flex: 0 0 auto;
+}
+
+.app-head--chat .app-head__title {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.app-head--chat .app-head__title p {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- 个人主页视图 ---------- */
+.ch {
+  --ch-ink: #16181b;
+  --ch-muted: rgba(22, 24, 27, 0.6);
+  --ch-faint: rgba(22, 24, 27, 0.38);
+  --ch-hair: rgba(22, 24, 27, 0.08);
+  --ch-inset: rgba(22, 24, 27, 0.055);
+  --ch-track: rgba(22, 24, 27, 0.11);
+  --ch-glass: rgba(255, 255, 255, 0.92);
+  --ch-solid: #16181b;
+  --ch-solid-ink: #f7f7f5;
+  --ch-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  --ch-blur: saturate(115%) blur(18px);
+  --ch-hit: rgba(22, 24, 27, 0.14);
+
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ch > * {
+  flex: 0 0 auto;
+}
+
+/* 资料卡 */
+.ch-hero {
+  padding: 14px;
+  border-radius: 20px;
+  background: var(--ch-glass);
+  -webkit-backdrop-filter: var(--ch-blur);
+  backdrop-filter: var(--ch-blur);
+  box-shadow: var(--ch-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.ch-hero__top {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+}
+
+.ch-hero__face {
+  position: relative;
+  flex: 0 0 auto;
+  display: block;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.18s var(--ease, ease);
+}
+
+.ch-hero__face:active {
+  transform: scale(0.955);
+}
+
+.ch-hero__face:focus-visible {
+  outline: 2px solid rgba(22, 24, 27, 0.5);
+  outline-offset: 3px;
+}
+
+/* 头像右下角的小编辑角标：提示可以点开换图 */
+.ch-hero__face-edit {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  background: var(--ch-solid);
+  color: var(--ch-solid-ink);
+  font-size: 10px;
+  font-style: normal;
+  line-height: 19px;
+  text-align: center;
+  box-shadow: 0 0 0 2px var(--ch-glass);
+}
+
+.ch-hero__face-edit::after {
+  content: "✎";
+}
+
+.ch-face {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 18px;
+  font-style: normal;
+  overflow: hidden;
+}
+
+img.ch-face {
+  object-fit: cover;
+  box-shadow: var(--ch-shadow), inset 0 0 0 1px var(--ch-hair);
+}
+
+.ch-face--orb {
+  background: radial-gradient(circle at 32% 28%, #ffffff 0%, #dededb 46%, #b7b8b6 100%);
+  box-shadow:
+    inset 0 2px 6px rgba(255, 255, 255, 0.9),
+    inset 0 -6px 12px rgba(22, 24, 27, 0.14),
+    var(--ch-shadow);
+}
+
+.ch-face--me {
+  background: var(--ch-inset);
+  box-shadow: inset 0 0 0 1px var(--ch-hair);
+  color: var(--ch-muted);
+  font-size: 19px;
+  font-weight: 600;
+}
+
+.ch-hero__main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ch-hero__name {
+  margin: 1px 0 3px;
+  font-size: 19px;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  color: var(--ch-ink);
+}
+
+.ch-hero__sub {
+  margin: 0 0 7px;
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  color: var(--ch-faint);
+}
+
+.ch-hero__bio {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--ch-muted);
+}
+
+.ch-hero__say {
+  margin: 10px 0 0;
+  padding-left: 10px;
+  border-left: 2px solid var(--ch-track);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--ch-muted);
+}
+
+.ch-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 11px;
+}
+
+.ch-tag {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--ch-inset);
+  color: var(--ch-muted);
+  font-size: 11.5px;
+}
+
+.ch-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 13px;
+  padding-top: 12px;
+  border-top: 1px solid var(--ch-hair);
+}
+
+.ch-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  text-align: center;
+}
+
+.ch-stat b {
+  font-size: 16px;
+  font-weight: 650;
+  color: var(--ch-ink);
+}
+
+.ch-stat span {
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: var(--ch-faint);
+}
+
+/* 分栏标签 */
+.ch-tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.ch-tab {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--ch-inset);
+  color: var(--ch-muted);
+  font: inherit;
+  font-size: 13px;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.18s var(--ease, ease), color 0.18s var(--ease, ease);
+}
+
+.ch-tab i {
+  font-style: normal;
+  font-size: 10.5px;
+  color: var(--ch-faint);
+}
+
+.ch-tab.is-on {
+  background: var(--ch-solid);
+  color: var(--ch-solid-ink);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.16);
+}
+
+.ch-tab.is-on i {
+  color: var(--ch-solid-ink);
+  opacity: 0.62;
+}
+
+.ch-tab:focus-visible {
+  outline: 2px solid rgba(22, 24, 27, 0.5);
+  outline-offset: 2px;
+}
+
+/* 面板 */
+.ch-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ch-panel > * {
+  flex: 0 0 auto;
+}
+
+/* 朋友圈 · 留言 */
+.ch-compose {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.ch-compose .field {
+  align-items: center;
+}
+
+.ch-compose .field input {
+  min-width: 0;
+}
+
+.ch-note {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--ch-faint);
+}
+
+.ch-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ch-post {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 13px;
+  border-radius: 18px;
+  background: var(--ch-glass);
+  -webkit-backdrop-filter: var(--ch-blur);
+  backdrop-filter: var(--ch-blur);
+  box-shadow: var(--ch-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.ch-post.is-mine {
+  background: var(--ch-inset);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: inset 0 0 0 1px var(--ch-hair);
+}
+
+.ch-post__face {
+  flex: 0 0 auto;
+  display: block;
+  width: 32px;
+  height: 32px;
+}
+
+.ch-post__face .ch-face {
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.ch-post__body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ch-post__who {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  margin: 0 0 5px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ch-ink);
+}
+
+.ch-post__who span {
+  font-size: 10.5px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color: var(--ch-faint);
+}
+
+.ch-post__text {
+  margin: 2px 0 0;
+  font-size: 15px;
+  line-height: 1.78;
+  letter-spacing: 0.01em;
+  color: var(--ch-ink);
+  overflow-wrap: anywhere;
+}
+
+.ch-post__foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 9px;
+}
+
+.ch-post__tag {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--ch-inset);
+  color: var(--ch-muted);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+}
+
+.ch-post.is-mine .ch-post__tag {
+  background: var(--ch-glass);
+}
+
+.ch-like {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 11px 0 9px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--ch-hair);
+  color: var(--ch-muted);
+  font: inherit;
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.18s var(--ease, ease), color 0.18s var(--ease, ease);
+}
+
+.ch-like i {
+  width: 11px;
+  height: 11px;
+  border: 1.4px solid currentColor;
+  border-radius: 50%;
+}
+
+.ch-like.is-on {
+  background: var(--ch-track);
+  box-shadow: none;
+  color: var(--ch-ink);
+}
+
+.ch-like.is-on i {
+  background: currentColor;
+}
+
+.ch-post__del {
+  flex: 0 0 auto;
+  min-width: 32px;
+  min-height: 32px;
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ch-faint);
+  font: inherit;
+  font-size: 17px;
+  line-height: 1;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ch-post__del:active {
+  background: var(--ch-track);
+  color: var(--ch-ink);
+}
+
+/* ---------- 生活质感：占位形象 / 环境标签 / 配图 / 小动作 ---------- */
+
+/* 没设头像时的安静书桌占位图 */
+img.ch-face--scene {
+  object-fit: cover;
+  background: var(--ch-inset);
+  box-shadow: var(--ch-shadow), inset 0 0 0 1px var(--ch-hair);
+}
+
+/* 空简介时自动生成的签名，语气轻一点 */
+.ch-hero__bio.is-auto {
+  letter-spacing: 0.01em;
+  color: var(--ch-muted);
+}
+
+/* 点赞 / 标签 / 环境 / 回赞提示会换行，窄屏下不会顶出去 */
+.ch-post__foot {
+  flex-wrap: wrap;
+  row-gap: 6px;
+}
+
+/* 发动态那一刻的环境：时段、天气，小且不抢正文 */
+.ch-post__env {
+  flex: 0 0 auto;
+  padding: 2px 7px;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px var(--ch-hair);
+  color: var(--ch-faint);
+  font-size: 9.5px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+/* 配图：有就显示，1:1 圆角网格；没有就不渲染 */
+.ch-post__media {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 10px;
+  max-width: 268px;
+}
+
+.ch-post__media[data-count="1"] {
+  grid-template-columns: minmax(0, 172px);
+}
+
+.ch-post__shot {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 12px;
+  background: var(--ch-inset);
+  box-shadow: inset 0 0 0 1px var(--ch-hair), var(--ch-shadow);
+}
+
+/* 点赞时数字跳一下 */
+.ch-like.is-bump {
+  animation: chBump 0.42s var(--ease, ease);
+}
+
+@keyframes chBump {
+  0% {
+    transform: none;
+  }
+  36% {
+    transform: scale(1.09);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+/* TA 也赞了你：隔一秒才浮出来的小提示 */
+.ch-post__echo {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--ch-track);
+  color: var(--ch-ink);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(3px);
+  transition: opacity 0.32s var(--ease, ease), transform 0.32s var(--ease, ease);
+}
+
+.ch-post__echo[hidden] {
+  display: none;
+}
+
+.ch-post__echo.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* 留言之后 TA 自己回的那一句 */
+.ch-post__reply {
+  margin: 9px 0 0;
+  padding: 8px 11px;
+  border-radius: 12px;
+  background: var(--ch-inset);
+  box-shadow: inset 0 0 0 1px var(--ch-hair);
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: var(--ch-muted);
+}
+
+.ch-post__reply b {
+  margin-right: 5px;
+  font-weight: 600;
+  color: var(--ch-ink);
+}
+
+.ch-post.is-mine .ch-post__reply {
+  background: var(--ch-glass);
+}
+
+.ch-post__reply.is-new {
+  animation: chReplyIn 0.36s var(--ease, ease);
+}
+
+@keyframes chReplyIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+[data-theme="dark"] img.ch-face--scene {
+  filter: brightness(0.86) saturate(0.92);
+  box-shadow: var(--ch-shadow), inset 0 0 0 1px rgba(243, 244, 246, 0.12);
+}
+
+[data-theme="dark"] .ch-hero__face:focus-visible {
+  outline-color: rgba(243, 244, 246, 0.6);
+}
+
+/* 聊天记录 · 搜索 */
+.ch-search {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.ch-filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ch-chip {
+  min-height: 34px;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ch-inset);
+  box-shadow: inset 0 1px 2px rgba(22, 24, 27, 0.05);
+  color: var(--ch-muted);
+  font: inherit;
+  font-size: 12.5px;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.18s var(--ease, ease), color 0.18s var(--ease, ease);
+}
+
+.ch-chip.is-on {
+  background: var(--ch-solid);
+  color: var(--ch-solid-ink);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.16);
+}
+
+.ch-count {
+  flex: 1 1 auto;
+  min-width: 80px;
+  text-align: right;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--ch-faint);
+}
+
+.ch-results {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ch-day {
+  margin: 4px 0 0 2px;
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  color: var(--ch-faint);
+}
+
+.ch-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--ch-glass);
+  box-shadow: var(--ch-shadow), inset 0 0 0 1px var(--ch-hair);
+  font: inherit;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.16s var(--ease, ease);
+}
+
+.ch-row:active {
+  background: var(--ch-inset);
+}
+
+.ch-row__side {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 42px;
+}
+
+.ch-row__side b {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--ch-muted);
+}
+
+.ch-row.is-me .ch-row__side b {
+  color: var(--ch-ink);
+}
+
+.ch-row__side i {
+  font-style: normal;
+  font-size: 10.5px;
+  color: var(--ch-faint);
+}
+
+.ch-row__text {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--ch-ink);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+
+.ch-hit {
+  padding: 0 1px;
+  border-radius: 3px;
+  background: var(--ch-hit);
+  color: var(--ch-ink);
+}
+
+/* 空状态 */
+.ch-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 26px 16px;
+  border-radius: 18px;
+  background: var(--ch-inset);
+  text-align: center;
+}
+
+.ch-empty i {
+  position: relative;
+  display: block;
+  width: 34px;
+  height: 34px;
+  margin-bottom: 2px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1.4px var(--ch-track);
+}
+
+.ch-empty i::after {
+  content: "";
+  position: absolute;
+  left: 11px;
+  top: 11px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--ch-track);
+}
+
+.ch-empty p {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  color: var(--ch-muted);
+}
+
+.ch-empty p:last-child {
+  font-size: 11px;
+  line-height: 1.7;
+  letter-spacing: 0.06em;
+  color: var(--ch-faint);
+}
+
+/* 从搜索结果跳回原消息时闪一下 */
+.msg.is-flash .msg__bubble {
+  animation: chFlash 1.5s var(--ease, ease);
+}
+
+@keyframes chFlash {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(22, 24, 27, 0);
+  }
+  18% {
+    box-shadow: 0 0 0 3px rgba(22, 24, 27, 0.24);
+  }
+  62% {
+    box-shadow: 0 0 0 3px rgba(22, 24, 27, 0.14);
+  }
+}
+
+@keyframes chFlashDark {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(243, 244, 246, 0);
+  }
+  18% {
+    box-shadow: 0 0 0 3px rgba(243, 244, 246, 0.3);
+  }
+  62% {
+    box-shadow: 0 0 0 3px rgba(243, 244, 246, 0.16);
+  }
+}
+
+/* ---------- 深色主题 ---------- */
+[data-theme="dark"] .ch {
+  --ch-ink: #f3f4f6;
+  --ch-muted: rgba(243, 244, 246, 0.66);
+  --ch-faint: rgba(243, 244, 246, 0.4);
+  --ch-hair: rgba(243, 244, 246, 0.09);
+  --ch-inset: rgba(243, 244, 246, 0.07);
+  --ch-track: rgba(243, 244, 246, 0.14);
+  --ch-glass: rgba(38, 40, 45, 0.94);
+  --ch-solid: #f3f4f6;
+  --ch-solid-ink: #17181b;
+  --ch-shadow: 0 6px 22px rgba(0, 0, 0, 0.4);
+  --ch-hit: rgba(243, 244, 246, 0.18);
+}
+
+[data-theme="dark"] .ch-hero,
+[data-theme="dark"] .ch-post,
+[data-theme="dark"] .ch-row {
+  box-shadow: var(--ch-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .ch-row {
+  box-shadow: var(--ch-shadow), inset 0 0 0 1px var(--ch-hair);
+}
+
+[data-theme="dark"] .ch-face--orb {
+  background: radial-gradient(circle at 32% 28%, #6a6d72 0%, #3c3f44 48%, #212327 100%);
+  box-shadow:
+    inset 0 2px 6px rgba(255, 255, 255, 0.16),
+    inset 0 -6px 12px rgba(0, 0, 0, 0.5),
+    var(--ch-shadow);
+}
+
+[data-theme="dark"] img.ch-face {
+  box-shadow: var(--ch-shadow), inset 0 0 0 1px rgba(243, 244, 246, 0.12);
+}
+
+[data-theme="dark"] .ch-tab,
+[data-theme="dark"] .ch-chip {
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+[data-theme="dark"] .ch-tab.is-on,
+[data-theme="dark"] .ch-chip.is-on {
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .ch-tab:focus-visible {
+  outline-color: rgba(243, 244, 246, 0.6);
+}
+
+[data-theme="dark"] .msg.is-flash .msg__bubble {
+  animation-name: chFlashDark;
+}
+
+/* ---------- 窄屏 ---------- */
+@media (max-width: 380px) {
+  .chat__home {
+    padding: 0 11px;
+  }
+
+  .chat__home span {
+    display: none;
+  }
+
+  .ch {
+    gap: 12px;
+  }
+
+  .ch-hero {
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .ch-hero__face {
+    width: 48px;
+    height: 48px;
+  }
+
+  .ch-hero__name {
+    font-size: 18px;
+  }
+
+  .ch-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 8px;
+  }
+
+  .ch-tab {
+    font-size: 12.5px;
+  }
+
+  .ch-tab i {
+    display: none;
+  }
+
+  .ch-post__text {
+    font-size: 14px;
+  }
+
+  .ch-post__media {
+    max-width: 100%;
+  }
+
+  .ch-post__media[data-count="1"] {
+    grid-template-columns: minmax(0, 150px);
+  }
+
+  .ch-count {
+    min-width: 100%;
+    text-align: left;
+  }
+}
+
+/* ---------- 减少动效 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .chat__home,
+  .ch-tab,
+  .ch-chip,
+  .ch-like,
+  .ch-hero__face,
+  .ch-post__echo,
+  .ch-row {
+    transition: none;
+  }
+
+  .ch-like.is-bump,
+  .ch-post__reply.is-new {
+    animation: none;
+  }
+
+  .ch-post__echo {
+    opacity: 1;
+    transform: none;
+  }
+
+  .msg.is-flash .msg__bubble {
+    animation: none;
+    box-shadow: 0 0 0 2px var(--ch-track);
+  }
+}
+
+body[data-motion="off"] .msg.is-flash .msg__bubble {
+  animation: none;
+}
+
+body[data-motion="off"] .ch-like.is-bump,
+body[data-motion="off"] .ch-post__reply.is-new {
+  animation: none;
+}
+
+/* 朋友圈点赞旁的静态「💬 回复」：和点赞同一行，窄屏不换行 */
+.ch-post__foot .btn-fake-reply {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  font-size: 13px;
+  line-height: 1.4;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ch-post__foot .btn-fake-reply:active {
+  opacity: 0.55;
+}
+
+body[data-motion="off"] .ch-post__echo {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
